@@ -1,18 +1,98 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from database import get_db
 from models import Supplier, EquipmentSchedule, CountryRisk
+from schemas import RiskAnalysisResponse, AlternativeSupplier
+from datetime import date
 
 router = APIRouter(prefix="/api", tags=["api"])
 
 
-@router.post("/analyze")
-async def analyze_data(db: Session = Depends(get_db)):
+@router.post("/analyze", response_model=RiskAnalysisResponse)
+async def analyze_supply_chain(db: Session = Depends(get_db)):
     """
-    POST /api/analyze - Placeholder endpoint for data analysis
-    Returns temporary JSON response until business logic is implemented
+    POST /api/analyze - Comprehensive supply chain risk analysis
+    
+    Analyzes:
+    - Schedule risks based on delayed equipment
+    - Cost impact from delays
+    - Country-level risks
+    - Alternative supplier recommendations
     """
-    return {"message": "analyze placeholder", "status": "not_implemented"}
+    
+    # Get all equipment schedules
+    all_schedules = db.query(EquipmentSchedule).all()
+    total_equipment_count = len(all_schedules)
+    
+    # Identify delayed equipment
+    delayed_schedules = [s for s in all_schedules if s.status == "delayed"]
+    delayed_count = len(delayed_schedules)
+    
+    # Calculate cost impact (sum of delayed equipment values)
+    cost_impact = sum(s.equipment_value for s in delayed_schedules)
+    
+    # Determine schedule risk level
+    if delayed_count == 0:
+        schedule_risk = "low"
+    elif delayed_count / total_equipment_count < 0.3:
+        schedule_risk = "medium"
+    else:
+        schedule_risk = "high"
+    
+    # Get high-risk countries (risk_score >= 7)
+    high_risk_countries_data = db.query(CountryRisk).filter(CountryRisk.risk_score >= 7.0).all()
+    high_risk_countries = [r.country for r in high_risk_countries_data]
+    
+    # Get suppliers from delayed equipment
+    delayed_supplier_ids = list(set(s.supplier_id for s in delayed_schedules))
+    
+    # Find alternative suppliers (high reliability, not in high-risk countries, not currently delayed)
+    alternative_suppliers_data = db.query(Supplier).filter(
+        Supplier.reliability_score >= 80.0,
+        ~Supplier.country.in_(high_risk_countries),
+        ~Supplier.id.in_(delayed_supplier_ids)
+    ).order_by(Supplier.reliability_score.desc()).limit(3).all()
+    
+    alternative_suppliers = [
+        AlternativeSupplier(
+            supplier_name=s.supplier_name,
+            country=s.country,
+            reliability_score=s.reliability_score,
+            average_delivery_time=s.average_delivery_time,
+            cost_competitiveness=s.cost_competitiveness,
+            reason=f"High reliability ({s.reliability_score}%), {s.average_delivery_time}-day delivery, located in {s.country}"
+        )
+        for s in alternative_suppliers_data
+    ]
+    
+    # Generate executive summary
+    executive_summary = (
+        f"Supply chain analysis reveals {schedule_risk.upper()} risk level. "
+        f"{delayed_count} out of {total_equipment_count} equipment items are delayed, "
+        f"resulting in ${cost_impact:,.2f} in potential cost impact. "
+    )
+    
+    if high_risk_countries:
+        executive_summary += f"High-risk countries identified: {', '.join(high_risk_countries)}. "
+    
+    if alternative_suppliers:
+        executive_summary += (
+            f"Recommended diversification to {len(alternative_suppliers)} alternative suppliers "
+            f"with average reliability score of {sum(s.reliability_score for s in alternative_suppliers_data) / len(alternative_suppliers_data):.1f}%."
+        )
+    else:
+        executive_summary += "No alternative suppliers currently available meeting criteria."
+    
+    return RiskAnalysisResponse(
+        schedule_risk=schedule_risk,
+        delayed_equipment_count=delayed_count,
+        total_equipment_count=total_equipment_count,
+        cost_impact=cost_impact,
+        high_risk_countries=high_risk_countries,
+        alternative_suppliers=alternative_suppliers,
+        executive_summary=executive_summary
+    )
 
 
 @router.get("/suppliers")
