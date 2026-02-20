@@ -17,21 +17,26 @@ export default function CostCard({ currency, estimatedCost }: CostCardProps) {
   };
 
   return (
-    <div className="rounded-xl p-4 shadow bg-slate-900/60 border border-slate-700 backdrop-blur-md">
-      <h3 className="text-lg font-semibold text-slate-200 mb-4">Cost Impact</h3>
+    <div className="rounded-xl p-5 bg-zinc-900 border border-zinc-800">
+      <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide mb-4">
+        Cost Impact
+      </p>
 
-      <div className="text-center py-6">
-        <div className="text-4xl font-bold text-orange-400 mb-2">
+      <div className="flex items-end gap-2 mb-1">
+        <span className="text-3xl font-semibold font-mono text-zinc-100">
           {formatCurrency(estimatedCost, currency)}
-        </div>
-        <p className="text-sm text-slate-400">
-          Estimated Additional Cost Due to Delays
-        </p>
+        </span>
       </div>
+      <p className="text-sm text-zinc-500 mb-5">
+        Estimated additional cost due to schedule delays
+      </p>
 
-      <div className="mt-4 h-2 bg-slate-800 rounded-full overflow-hidden">
-        <div className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full transition-all duration-1000 w-3/4" />
+      <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+        <div className="h-full bg-amber-500 rounded-full transition-all duration-1000 w-3/4" />
       </div>
+      <p className="text-xs text-zinc-600 mt-2">
+        Based on {currency} cost model
+      </p>
     </div>
   );
 }

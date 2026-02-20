@@ -2,3 +2,9 @@ fastapi
 uvicorn
 sqlalchemy
 python-dotenv
+httpx
+pandas
+google-generativeai
+python-jose[cryptography]
+bcrypt
+python-multipart
