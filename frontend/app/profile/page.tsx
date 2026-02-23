@@ -96,8 +96,9 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-zinc-700 border-t-indigo-500 rounded-full animate-spin" />
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center gap-4">
+        <div className="w-8 h-8 border-2 border-zinc-800 border-t-indigo-500 rounded-full animate-spin" />
+        <p className="text-xs text-zinc-600">Loading profile…</p>
       </div>
     );
   }
@@ -112,138 +113,142 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       {/* Nav */}
-      <header className="border-b border-zinc-800 bg-zinc-900/60 backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link
-            href="/"
-            className="text-zinc-100 font-semibold tracking-tight text-sm"
-          >
-            SentriChain
-          </Link>
-          <button
-            onClick={handleLogout}
-            className="text-zinc-400 hover:text-zinc-100 text-sm transition-colors"
-          >
-            Sign out
-          </button>
+      <header className="border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-5xl mx-auto px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2}
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+            <Link href="/" className="text-zinc-100 font-bold tracking-tight hover:text-indigo-400 transition-colors">
+              SentriChain
+            </Link>
+            <span className="text-zinc-700">/</span>
+            <span className="text-zinc-500 text-sm">Profile</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link href="/dashboard"
+              className="flex items-center gap-2 text-sm px-3.5 py-2 rounded-xl border border-zinc-800 text-zinc-400 hover:text-zinc-100 hover:border-zinc-600 bg-zinc-900/50 transition-all">
+              ← Dashboard
+            </Link>
+            <button onClick={handleLogout}
+              className="text-sm px-3.5 py-2 rounded-xl border border-zinc-800 text-zinc-500 hover:text-red-400 hover:border-red-500/30 bg-zinc-900/50 transition-all">
+              Sign out
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-6 py-12">
-        {/* Avatar + identity */}
-        <div className="flex items-center gap-4 mb-8">
-          <div className="w-14 h-14 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold text-lg select-none">
-            {initials}
-          </div>
-          <div>
-            <p className="text-zinc-100 font-semibold">{user.full_name}</p>
-            <p className="text-zinc-400 text-sm">{user.email}</p>
-            <span
-              className={`mt-1 inline-block text-xs px-2 py-0.5 rounded-full font-medium ${
+      <main className="max-w-5xl mx-auto px-8 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+          {/* Left column — identity */}
+          <div className="lg:col-span-1">
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 text-center">
+              <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-2xl select-none mx-auto mb-4">
+                {initials}
+              </div>
+              <p className="text-zinc-100 font-semibold text-lg">{user.full_name}</p>
+              <p className="text-zinc-500 text-sm mt-1">{user.email}</p>
+              <span className={`mt-3 inline-block text-xs px-3 py-1 rounded-full font-semibold border ${
                 user.role === "admin"
-                  ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                  : "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
-              }`}
-            >
-              {user.role}
-            </span>
-          </div>
-        </div>
+                  ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                  : "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+              }`}>
+                {user.role}
+              </span>
 
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-          <h2 className="text-zinc-100 font-semibold mb-5">Edit profile</h2>
+              <div className="mt-6 pt-6 border-t border-zinc-800 space-y-3 text-left">
+                {[
+                  { label: "Account ID", value: `#${user.id}`, mono: true },
+                  { label: "Member since", value: new Date(user.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }), mono: false },
+                ].map(({ label, value, mono }) => (
+                  <div key={label} className="flex justify-between items-baseline gap-2">
+                    <span className="text-zinc-500 text-xs">{label}</span>
+                    <span className={`text-zinc-300 text-sm ${mono ? "font-mono" : ""}`}>{value}</span>
+                  </div>
+                ))}
+              </div>
 
-          {successMsg && (
-            <div className="mb-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm">
-              {successMsg}
-            </div>
-          )}
-          {error && (
-            <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSave} className="space-y-4">
-            <div>
-              <label className="block text-sm text-zinc-400 mb-1.5">
-                Full name
-              </label>
-              <input
-                id="full-name"
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2.5 text-zinc-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-              />
-            </div>
-
-            <div className="border-t border-zinc-800 pt-4">
-              <p className="text-xs text-zinc-500 mb-3 uppercase tracking-wide">
-                Change password
-              </p>
-              <div className="space-y-3">
-                <input
-                  type="password"
-                  placeholder="Current password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2.5 text-zinc-100 text-sm placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                />
-                <input
-                  type="password"
-                  placeholder="New password (min 8 chars)"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2.5 text-zinc-100 text-sm placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                />
+              <div className="mt-6 space-y-2">
+                <Link href="/onboard"
+                  className="block w-full text-center text-sm py-2.5 rounded-xl bg-indigo-600/10 border border-indigo-600/20 text-indigo-400 hover:bg-indigo-600/20 hover:text-indigo-300 transition-all">
+                  Update company profile
+                </Link>
+                <button onClick={handleLogout}
+                  className="block w-full text-center text-sm py-2.5 rounded-xl text-zinc-600 hover:text-red-400 transition-colors">
+                  Sign out of all sessions
+                </button>
               </div>
             </div>
+          </div>
 
-            <button
-              type="submit"
-              disabled={saving}
-              className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg px-4 py-2.5 transition-colors"
-            >
-              {saving ? "Saving..." : "Save changes"}
-            </button>
-          </form>
-        </div>
+          {/* Right column — edit form */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8">
+              <h2 className="text-lg font-semibold text-zinc-100 mb-6">Edit profile</h2>
 
-        {/* Account meta */}
-        <div className="mt-6 bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-          <h3 className="text-zinc-400 text-xs uppercase tracking-wide mb-3">
-            Account details
-          </h3>
-          <dl className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <dt className="text-zinc-500">Email</dt>
-              <dd className="text-zinc-300 font-mono">{user.email}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-zinc-500">Role</dt>
-              <dd className="text-zinc-300">{user.role}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-zinc-500">Account ID</dt>
-              <dd className="text-zinc-300 font-mono">#{user.id}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-zinc-500">Created</dt>
-              <dd className="text-zinc-300">
-                {new Date(user.created_at).toLocaleDateString()}
-              </dd>
-            </div>
-          </dl>
-        </div>
+              {successMsg && (
+                <div className="mb-5 flex items-center gap-3 p-4 rounded-xl bg-emerald-500/8 border border-emerald-500/25 text-emerald-400 text-sm">
+                  <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                  {successMsg}
+                </div>
+              )}
+              {error && (
+                <div className="mb-5 flex items-center gap-3 p-4 rounded-xl bg-red-500/8 border border-red-500/25 text-red-400 text-sm">
+                  <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  {error}
+                </div>
+              )}
 
-        <div className="mt-6 text-center">
-          <button
-            onClick={handleLogout}
-            className="text-sm text-zinc-500 hover:text-red-400 transition-colors"
-          >
-            Sign out of all sessions
-          </button>
+              <form onSubmit={handleSave} className="space-y-5">
+                <div>
+                  <label htmlFor="full-name" className="block text-sm font-medium text-zinc-400 mb-2">Full name</label>
+                  <input
+                    id="full-name"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-3 text-zinc-100 text-sm
+                               focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition-all"
+                  />
+                </div>
+
+                <div className="border-t border-zinc-800 pt-5">
+                  <h3 className="text-sm font-medium text-zinc-400 mb-4">Change password</h3>
+                  <div className="space-y-3">
+                    <input
+                      type="password"
+                      placeholder="Current password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-3 text-zinc-100 text-sm
+                                 placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition-all"
+                    />
+                    <input
+                      type="password"
+                      placeholder="New password (min 8 characters)"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-4 py-3 text-zinc-100 text-sm
+                                 placeholder-zinc-600 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition-all"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-semibold rounded-xl px-6 py-3 transition-all"
+                >
+                  {saving && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                  {saving ? "Saving…" : "Save changes"}
+                </button>
+              </form>
+            </div>
+          </div>
         </div>
       </main>
     </div>

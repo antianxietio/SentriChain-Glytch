@@ -62,6 +62,7 @@ async def get_suppliers(db: Session = Depends(get_db)):
                 "supplier_name": s.supplier_name,
                 "country": s.country,
                 "industry": s.industry,
+                "supply_tier": s.supply_tier,
                 "reliability_score": s.reliability_score,
                 "average_delivery_time": s.average_delivery_time,
                 "cost_competitiveness": s.cost_competitiveness,
@@ -86,6 +87,8 @@ async def get_supplier(supplier_id: int, db: Session = Depends(get_db)):
         "id": supplier.id,
         "supplier_name": supplier.supplier_name,
         "country": supplier.country,
+        "industry": supplier.industry,
+        "supply_tier": supplier.supply_tier,
         "reliability_score": supplier.reliability_score,
         "average_delivery_time": supplier.average_delivery_time,
         "cost_competitiveness": supplier.cost_competitiveness,
@@ -172,6 +175,7 @@ async def get_suppliers_overview(
             country=s.country,
             continent=cf.continent if cf else "Unknown",
             industry=s.industry,
+            supply_tier=s.supply_tier,
             reliability_score=s.reliability_score,
             avg_delivery_days=s.average_delivery_time,
             cost_competitiveness=s.cost_competitiveness,
@@ -880,6 +884,8 @@ async def get_suppliers(db: Session = Depends(get_db)):
                 "id": s.id,
                 "supplier_name": s.supplier_name,
                 "country": s.country,
+                "industry": s.industry,
+                "supply_tier": s.supply_tier,
                 "reliability_score": s.reliability_score,
                 "average_delivery_time": s.average_delivery_time,
                 "cost_competitiveness": s.cost_competitiveness
@@ -902,6 +908,8 @@ async def get_supplier(supplier_id: int, db: Session = Depends(get_db)):
         "id": supplier.id,
         "supplier_name": supplier.supplier_name,
         "country": supplier.country,
+        "industry": supplier.industry,
+        "supply_tier": supplier.supply_tier,
         "reliability_score": supplier.reliability_score,
         "average_delivery_time": supplier.average_delivery_time,
         "cost_competitiveness": supplier.cost_competitiveness
@@ -912,126 +920,6 @@ async def get_supplier(supplier_id: int, db: Session = Depends(get_db)):
 @router.get("/suppliers/{supplier_id}/analyze-legacy-disabled", include_in_schema=False)
 async def _disabled_legacy_analyze(supplier_id: int):
     raise HTTPException(status_code=404, detail="Not found")
-
-def _unused_placeholder():
-    # Get supplier
-    supplier = db.query(Supplier).filter(Supplier.id == supplier_id).first()
-    if not supplier:
-        raise HTTPException(status_code=404, detail="Supplier not found")
-    
-    # Get all equipment schedules for this supplier
-    supplier_schedules = db.query(EquipmentSchedule).filter(
-        EquipmentSchedule.supplier_id == supplier_id
-    ).all()
-    
-    if not supplier_schedules:
-        # No equipment data for this supplier
-        return {
-            "schedule": {
-                "avg_delay_days": 0,
-                "delay_percent": 0,
-                "risk_level": "low"
-            },
-            "costImpact": {
-                "currency": "USD",
-                "estimated_cost": 0
-            },
-            "alternatives": [],
-            "summary": f"No equipment data available for {supplier.supplier_name}.",
-            "geoRisk": None
-        }
-    
-    # Calculate delay statistics
-    delayed_schedules = [s for s in supplier_schedules if s.status == "delayed"]
-    total_count = len(supplier_schedules)
-    delayed_count = len(delayed_schedules)
-    delay_percent = (delayed_count / total_count * 100) if total_count > 0 else 0
-    
-    # Calculate average delay in days
-    total_delay_days = 0
-    for schedule in delayed_schedules:
-        if schedule.actual_delivery_date and schedule.planned_delivery_date:
-            delay_days = (schedule.actual_delivery_date - schedule.planned_delivery_date).days
-            total_delay_days += delay_days
-        elif not schedule.actual_delivery_date:
-            # For items not yet delivered, estimate delay based on today's date
-            from datetime import date as date_type
-            estimated_delay = (date_type.today() - schedule.planned_delivery_date).days
-            if estimated_delay > 0:
-                total_delay_days += estimated_delay
-    
-    avg_delay_days = total_delay_days / delayed_count if delayed_count > 0 else 0
-    
-    # Determine risk level
-    if delay_percent >= 50:
-        risk_level = "high"
-    elif delay_percent >= 20:
-        risk_level = "medium"
-    else:
-        risk_level = "low"
-    
-    # Calculate cost impact
-    cost_impact = sum(s.equipment_value for s in delayed_schedules)
-    
-    # Get country risk for supplier's country
-    country_risk = db.query(CountryRisk).filter(
-        CountryRisk.country.ilike(supplier.country)
-    ).first()
-    
-    geo_risk = None
-    if country_risk:
-        geo_risk = {
-            "headline": country_risk.headline,
-            "source_url": country_risk.source_url
-        }
-    
-    # Find alternative suppliers (better reliability, different country, not the current one)
-    alternative_suppliers_data = db.query(Supplier).filter(
-        Supplier.id != supplier_id,
-        Supplier.reliability_score > supplier.reliability_score,
-    ).order_by(Supplier.reliability_score.desc()).limit(3).all()
-    
-    alternatives = [
-        {
-            "id": s.id,
-            "name": s.supplier_name,
-            "country": s.country,
-            "score": s.reliability_score
-        }
-        for s in alternative_suppliers_data
-    ]
-    
-    # Generate summary
-    summary = (
-        f"Analysis of {supplier.supplier_name} ({supplier.country}): "
-        f"{delayed_count} of {total_count} equipment items are delayed "
-        f"({delay_percent:.1f}%), with an average delay of {avg_delay_days:.1f} days. "
-        f"Total cost impact: ${cost_impact:,.2f}. "
-    )
-    
-    if country_risk and country_risk.risk_score >= 7.0:
-        summary += f"Country risk is HIGH ({country_risk.risk_score}/10). "
-    
-    if alternatives:
-        summary += f"Found {len(alternatives)} alternative suppliers with better reliability scores."
-    else:
-        summary += "No better alternatives found at this time."
-    
-    return {
-        "schedule": {
-            "avg_delay_days": round(avg_delay_days, 1),
-            "delay_percent": round(delay_percent, 1),
-            "risk_level": risk_level
-        },
-        "costImpact": {
-            "currency": "USD",
-            "estimated_cost": cost_impact
-        },
-        "alternatives": alternatives,
-        "summary": summary,
-        "geoRisk": geo_risk
-    }
-
 
 
 @router.get("/equipment-schedule")

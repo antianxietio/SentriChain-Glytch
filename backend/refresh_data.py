@@ -12,8 +12,16 @@ Run:  python refresh_data.py
 
 import json
 import random
+import sys
+import time
 import httpx
 from datetime import date, timedelta
+
+# Force UTF-8 output so Unicode symbols (✓ ⚠ →) work on Windows cp1252 terminals
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 from database import engine, SessionLocal, Base
 from models import Supplier, EquipmentSchedule, CountryRisk, CountryFactors, User, UserCompanyProfile
 import bcrypt
@@ -151,10 +159,279 @@ SHIPPING_DATA = {
 
 
 # ---------------------------------------------------------------------------
-# Real supplier data — covering all major industries
+# Wikidata SPARQL — live supplier fetch (no API key required)
 # ---------------------------------------------------------------------------
 
-REAL_SUPPLIERS = [
+WIKIDATA_ENDPOINT = "https://query.wikidata.org/sparql"
+
+# Wikidata country QIDs for our 14 countries
+COUNTRY_QIDS: dict[str, str] = {
+    "Q148": "China",
+    "Q668": "India",
+    "Q881": "Vietnam",
+    "Q865": "Taiwan",
+    "Q884": "South Korea",
+    "Q183": "Germany",
+    "Q17":  "Japan",
+    "Q30":  "USA",
+    "Q833": "Malaysia",
+    "Q96":  "Mexico",
+    "Q155": "Brazil",
+    "Q902": "Bangladesh",
+    "Q252": "Indonesia",
+    "Q869": "Thailand",
+}
+
+# Additional country-name aliases Wikidata may return
+_COUNTRY_ALIASES: dict[str, str] = {
+    "People's Republic of China": "China",
+    "Republic of China": "Taiwan",
+    "Republic of Korea": "South Korea",
+    "Korea": "South Korea",
+    "Federal Republic of Germany": "Germany",
+    "United States of America": "USA",
+    "United States": "USA",
+}
+
+# Cost tier by country (high = cheap supplier, low = expensive)
+_COUNTRY_COST_TIER: dict[str, str] = {
+    "China": "high", "India": "high", "Vietnam": "high", "Bangladesh": "high",
+    "Indonesia": "high", "Thailand": "high", "Mexico": "medium",
+    "Malaysia": "medium", "Brazil": "medium",
+    "Taiwan": "medium", "South Korea": "medium",
+    "Japan": "low", "Germany": "low", "USA": "low",
+}
+
+# Wikidata class QIDs to query per industry (tries each class in order)
+# "p31" = instance-of QIDs; "p452" = P452 industry-property QIDs;
+# "keywords" = fallback text search on P452 label (most robust, slightly slower)
+# "tier" = supply chain position: "Raw Materials" | "Components" | "Manufacturing"
+WIKIDATA_INDUSTRIES: list[dict] = [
+    # ── Components / Manufacturer tier ──────────────────────────────
+    {"industry": "Electronics",     "tier": "Components",    "p31": ["Q1297980", "Q210112"],     "p452": ["Q11650"],    "keywords": ["electronics"],                   "target": 10, "min_sl": 4},
+    {"industry": "Manufacturing",   "tier": "Components",    "p31": ["Q216786", "Q13235160"],    "p452": ["Q8205328"],  "keywords": ["manufacturing", "industrial"],   "target": 8,  "min_sl": 4},
+    {"industry": "Automotive",      "tier": "Components",    "p31": ["Q190604", "Q786820"],      "p452": ["Q1361984"],  "keywords": ["automotive", "automobile"],      "target": 7,  "min_sl": 4},
+    {"industry": "Pharmaceuticals", "tier": "Components",    "p31": [],                           "p452": [],            "keywords": ["pharmaceutical"],               "target": 6,  "min_sl": 3},
+    {"industry": "Textiles",        "tier": "Components",    "p31": ["Q190716"],                  "p452": ["Q28823"],    "keywords": ["textile", "apparel"],           "target": 5,  "min_sl": 3},
+    {"industry": "Food & Beverage", "tier": "Components",    "p31": ["Q1141470"],                 "p452": ["Q1589726"],  "keywords": ["food", "beverage"],             "target": 5,  "min_sl": 3},
+    {"industry": "Chemical",        "tier": "Components",    "p31": ["Q899523", "Q170790"],       "p452": ["Q43004"],    "keywords": ["chemical"],                     "target": 4,  "min_sl": 3},
+    {"industry": "Aerospace",       "tier": "Components",    "p31": [],                           "p452": [],            "keywords": ["aerospace", "aviation"],        "target": 4,  "min_sl": 3},
+    {"industry": "Energy",          "tier": "Components",    "p31": ["Q1651599", "Q891723"],      "p452": ["Q12748"],    "keywords": ["energy", "renewable"],          "target": 4,  "min_sl": 3},
+    # Raw Materials tier uses curated list below (keyword SPARQL too slow on free Wikidata endpoint)
+]
+
+# ---------------------------------------------------------------------------
+# Curated Raw Materials tier — real upstream feedstock / material companies
+# (These are always loaded; avoids slow keyword-based SPARQL queries)
+# ---------------------------------------------------------------------------
+RAW_MATERIALS_SUPPLIERS = [
+    # ── Electronics — Silicon / Semiconductor materials ──────────────
+    {"name": "Shin-Etsu Chemical",           "country": "Japan",       "industry": "Electronics",     "tier": "Raw Materials"},
+    {"name": "Sumco Corporation",            "country": "Japan",       "industry": "Electronics",     "tier": "Raw Materials"},
+    {"name": "Wacker Chemie AG",             "country": "Germany",     "industry": "Electronics",     "tier": "Raw Materials"},
+    {"name": "SK Siltron",                   "country": "South Korea", "industry": "Electronics",     "tier": "Raw Materials"},
+    {"name": "Siltronic AG",                 "country": "Germany",     "industry": "Electronics",     "tier": "Raw Materials"},
+    # ── Textiles — Fiber / Yarn feedstock ────────────────────────────
+    {"name": "Indorama Ventures",            "country": "Thailand",    "industry": "Textiles",        "tier": "Raw Materials"},
+    {"name": "Toray Industries",             "country": "Japan",       "industry": "Textiles",        "tier": "Raw Materials"},
+    {"name": "Teijin Limited",               "country": "Japan",       "industry": "Textiles",        "tier": "Raw Materials"},
+    {"name": "Reliance Textiles Division",   "country": "India",       "industry": "Textiles",        "tier": "Raw Materials"},
+    {"name": "Zhejiang Hengli Petrochemical","country": "China",       "industry": "Textiles",        "tier": "Raw Materials"},
+    # ── Pharmaceuticals — Active Pharmaceutical Ingredients ──────────
+    {"name": "BASF Pharma Chemicals",        "country": "Germany",     "industry": "Pharmaceuticals", "tier": "Raw Materials"},
+    {"name": "Dr. Reddy's API Division",     "country": "India",       "industry": "Pharmaceuticals", "tier": "Raw Materials"},
+    {"name": "Zhejiang Medicine Co.",        "country": "China",       "industry": "Pharmaceuticals", "tier": "Raw Materials"},
+    {"name": "Divi's Laboratories",          "country": "India",       "industry": "Pharmaceuticals", "tier": "Raw Materials"},
+    # ── Chemical — Petrochemicals / Feedstock ────────────────────────
+    {"name": "Sinopec Chemicals",            "country": "China",       "industry": "Chemical",        "tier": "Raw Materials"},
+    {"name": "LG Chem Petrochemicals",       "country": "South Korea", "industry": "Chemical",        "tier": "Raw Materials"},
+    {"name": "PTT Global Chemical",          "country": "Thailand",    "industry": "Chemical",        "tier": "Raw Materials"},
+    {"name": "Reliance Industries",          "country": "India",       "industry": "Chemical",        "tier": "Raw Materials"},
+    # ── Manufacturing — Steel / Metals ───────────────────────────────
+    {"name": "POSCO",                        "country": "South Korea", "industry": "Manufacturing",   "tier": "Raw Materials"},
+    {"name": "Nippon Steel Corporation",     "country": "Japan",       "industry": "Manufacturing",   "tier": "Raw Materials"},
+    {"name": "Tata Steel",                   "country": "India",       "industry": "Manufacturing",   "tier": "Raw Materials"},
+    {"name": "Baoshan Iron & Steel",         "country": "China",       "industry": "Manufacturing",   "tier": "Raw Materials"},
+    {"name": "ThyssenKrupp Materials",       "country": "Germany",     "industry": "Manufacturing",   "tier": "Raw Materials"},
+    # ── Aerospace — Specialty Materials ──────────────────────────────
+    {"name": "Toray Carbon Fiber",           "country": "Japan",       "industry": "Aerospace",       "tier": "Raw Materials"},
+    {"name": "SGL Carbon SE",                "country": "Germany",     "industry": "Aerospace",       "tier": "Raw Materials"},
+    {"name": "UACJ Corporation",             "country": "Japan",       "industry": "Aerospace",       "tier": "Raw Materials"},
+]
+
+
+def _normalize_country(label: str) -> str | None:
+    """Map a Wikidata country label to our canonical country name."""
+    for canonical in COUNTRIES:
+        if canonical.lower() == label.lower() or canonical.lower() in label.lower():
+            return canonical
+    return _COUNTRY_ALIASES.get(label)
+
+
+def _derive_metrics(country: str) -> tuple[float, int, str]:
+    """Derive reliability %, delivery days, cost tier from World Bank LPI data."""
+    lpi = LPI_2023.get(country, 3.0)
+    # LPI 2.5-4.3 → roughly 62-97% reliability
+    base_rel = 40.0 + (lpi * 14.0)
+    reliability = round(min(99.0, max(58.0, base_rel + random.uniform(-7.0, 5.0))), 1)
+    base_days = SHIPPING_DATA.get(country, {}).get("days", 20)
+    delivery = max(7, base_days + random.randint(-3, 6))
+    cost = _COUNTRY_COST_TIER.get(country, "medium")
+    return reliability, delivery, cost
+
+
+def fetch_wikidata_suppliers() -> list[dict]:
+    """
+    Query Wikidata SPARQL for real-world companies grouped by industry.
+    Derives reliability/delivery/cost metrics from World Bank LPI data.
+    Returns [] on failure (caller should fall back to FALLBACK_SUPPLIERS).
+    """
+    country_filter = ", ".join(f"wd:{q}" for q in COUNTRY_QIDS)
+    results: list[dict] = []
+    seen: set[str] = set()
+
+    print("\n  Querying Wikidata SPARQL for live supplier companies...")
+
+    for cfg in WIKIDATA_INDUSTRIES:
+        industry = cfg["industry"]
+        tier = cfg["tier"]
+        target = cfg["target"]
+        min_sl = cfg["min_sl"]
+        found: list[dict] = []
+
+        # Build query variants: (predicate, QID) pairs to try in order,
+        # followed by a keyword-based text search as final fallback
+        query_variants: list[tuple[str, str]] = []
+        for qid in cfg.get("p31", []):
+            query_variants.append(("wdt:P31", qid))
+        for qid in cfg.get("p452", []):
+            query_variants.append(("wdt:P452", qid))
+
+        for pred, qid in query_variants:
+            if len(found) >= target:
+                break
+
+            sparql = (
+                "SELECT DISTINCT ?companyLabel ?countryLabel WHERE {\n"
+                f"  ?company {pred} wd:{qid} ;\n"
+                f"           wdt:P17 ?country .\n"
+                f"  FILTER(?country IN ({country_filter}))\n"
+                "  ?company wikibase:sitelinks ?sl .\n"
+                f"  FILTER(?sl > {min_sl})\n"
+                "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\" . }\n"
+                "}\n"
+                "ORDER BY DESC(?sl) ?companyLabel\n"
+                "LIMIT 100\n"
+            )
+
+            try:
+                with httpx.Client(
+                    timeout=30.0,
+                    headers={
+                        "User-Agent": "SentriChain-RiskTool/1.0 (supply-chain-risk; https://github.com/sentrichain) httpx/0.27",
+                        "Accept": "application/sparql-results+json",
+                    },
+                ) as c:
+                    r = c.post(
+                        WIKIDATA_ENDPOINT,
+                        data={"query": sparql},
+                    )
+                if r.status_code != 200:
+                    print(f"    ⚠ HTTP {r.status_code} for {industry}/{qid}")
+                    continue
+                rows = r.json().get("results", {}).get("bindings", [])
+            except Exception as exc:
+                print(f"    ⚠ {industry}/{qid}: {exc}")
+                continue
+
+            for row in rows:
+                if len(found) >= target:
+                    break
+                name = row.get("companyLabel", {}).get("value", "")
+                country_label = row.get("countryLabel", {}).get("value", "")
+                if not name or (name.startswith("Q") and name[1:].isdigit()):
+                    continue
+                if name in seen:
+                    continue
+                country = _normalize_country(country_label)
+                if not country or country not in COUNTRIES:
+                    continue
+                reliability, delivery, cost = _derive_metrics(country)
+                found.append({"name": name, "country": country, "industry": industry, "tier": tier,
+                              "reliability": reliability, "delivery": delivery, "cost": cost})
+                seen.add(name)
+
+        # Keyword fallback: search by P452 label text (catches industries where QID enumeration fails)
+        if len(found) < target:
+            for kw in cfg.get("keywords", []):
+                if len(found) >= target:
+                    break
+                kw_filter = " || ".join(
+                    f'CONTAINS(LCASE(?indLabel), "{k}")' for k in [kw]
+                )
+                sparql = (
+                    "SELECT DISTINCT ?companyLabel ?countryLabel WHERE {\n"
+                    "  ?company wdt:P17 ?country ;\n"
+                    "           wdt:P452 ?ind .\n"
+                    f"  FILTER(?country IN ({country_filter}))\n"
+                    "  ?ind rdfs:label ?indLabel .\n"
+                    "  FILTER(LANG(?indLabel) = \"en\")\n"
+                    f"  FILTER({kw_filter})\n"
+                    "  ?company wikibase:sitelinks ?sl .\n"
+                    f"  FILTER(?sl > {min_sl})\n"
+                    "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\" . }\n"
+                    "}\n"
+                    "ORDER BY DESC(?sl) ?companyLabel\n"
+                    "LIMIT 100\n"
+                )
+                try:
+                    with httpx.Client(
+                        timeout=35.0,
+                        headers={
+                            "User-Agent": "SentriChain-RiskTool/1.0 (supply-chain-risk; https://github.com/sentrichain) httpx/0.27",
+                            "Accept": "application/sparql-results+json",
+                        },
+                    ) as c:
+                        r = c.post(WIKIDATA_ENDPOINT, data={"query": sparql})
+                    if r.status_code != 200:
+                        continue
+                    rows = r.json().get("results", {}).get("bindings", [])
+                except BaseException:
+                    continue
+                for row in rows:
+                    if len(found) >= target:
+                        break
+                    name = row.get("companyLabel", {}).get("value", "")
+                    country_label = row.get("countryLabel", {}).get("value", "")
+                    if not name or (name.startswith("Q") and name[1:].isdigit()):
+                        continue
+                    if name in seen:
+                        continue
+                    country = _normalize_country(country_label)
+                    if not country or country not in COUNTRIES:
+                        continue
+                    reliability, delivery, cost = _derive_metrics(country)
+                    found.append({"name": name, "country": country, "industry": industry, "tier": tier,
+                                  "reliability": reliability, "delivery": delivery, "cost": cost})
+                    seen.add(name)
+
+        print(f"    {industry}: {len(found)} suppliers")
+        results.extend(found)
+        time.sleep(0.8)  # be polite to Wikidata rate limiter
+
+    if len(results) < 25:
+        print(f"  ⚠ Only {len(results)} live results — will use fallback list")
+        return []
+
+    print(f"  ✓ {len(results)} suppliers fetched from Wikidata")
+    return results
+
+
+# ---------------------------------------------------------------------------
+# Fallback supplier data (used when Wikidata is unreachable)
+# ---------------------------------------------------------------------------
+
+FALLBACK_SUPPLIERS = [
     # ── Electronics ─────────────────────────────────────────────────
     {"name": "Foxconn Industrial Internet (Shenzhen)", "country": "China",       "industry": "Electronics", "reliability": 74.0, "delivery": 22, "cost": "high"},
     {"name": "BYD Electronic Components",              "country": "China",       "industry": "Electronics", "reliability": 71.0, "delivery": 24, "cost": "high"},
@@ -461,25 +738,53 @@ def run():
     print("  ✓ Country factors updated (14 countries)")
 
     # ── 3. Suppliers + Schedules ────────────────────────────────────
-    print("\n[3/4] Loading real supplier data + generating LPI-grounded schedules...")
-    # Migrate: add industry column if it doesn't exist
+    print("\n[3/4] Fetching live supplier data (Wikidata) + generating schedules...")
+    # Migrate: add industry and supply_tier columns if they don't exist
     from sqlalchemy import text as _text
     try:
         db.execute(_text("ALTER TABLE suppliers ADD COLUMN industry VARCHAR"))
         db.commit()
     except Exception:
         pass  # Already exists
-    # Clear existing
+    try:
+        db.execute(_text("ALTER TABLE suppliers ADD COLUMN supply_tier VARCHAR"))
+        db.commit()
+    except Exception:
+        pass  # Already exists
+
+    # Fetch BEFORE clearing DB so a crash/interrupt never leaves it empty
+    try:
+        live = fetch_wikidata_suppliers()
+    except BaseException as exc:
+        print(f"  ⚠ Wikidata fetch interrupted ({type(exc).__name__}): {exc}")
+        live = []
+    suppliers_to_load = live if live else FALLBACK_SUPPLIERS
+
+    # Always append curated Raw Materials suppliers (with derived LPI-based metrics)
+    raw_mats = []
+    for s in RAW_MATERIALS_SUPPLIERS:
+        rel, ddays, cost = _derive_metrics(s["country"])
+        raw_mats.append({
+            "name": s["name"], "country": s["country"],
+            "industry": s["industry"], "tier": s["tier"],
+            "reliability": rel, "delivery": ddays, "cost": cost,
+        })
+    suppliers_to_load = suppliers_to_load + raw_mats
+
+    # Clear existing only after we have data ready to insert
     db.query(EquipmentSchedule).delete()
     db.query(Supplier).delete()
     db.commit()
+    source_label = "Wikidata (live)" if live else "fallback list"
+    print(f"  Using {source_label}: {len(suppliers_to_load)} suppliers")
 
-    for i, s in enumerate(REAL_SUPPLIERS, start=1):
+    for i, s in enumerate(suppliers_to_load, start=1):
         sup = Supplier(
             id=i,
             supplier_name=s["name"],
             country=s["country"],
             industry=s["industry"],
+            supply_tier=s.get("tier", "Components"),
             reliability_score=s["reliability"],
             average_delivery_time=s["delivery"],
             cost_competitiveness=s["cost"],
@@ -499,7 +804,7 @@ def run():
             ))
 
     db.commit()
-    print(f"  ✓ {len(REAL_SUPPLIERS)} suppliers, {len(REAL_SUPPLIERS) * 30} schedule records")
+    print(f"  ✓ {len(suppliers_to_load)} suppliers ({source_label}), {len(suppliers_to_load) * 30} schedule records")
 
     # ── 4. Demo users ───────────────────────────────────────────────
     print("\n[4/4] Ensuring demo users exist...")

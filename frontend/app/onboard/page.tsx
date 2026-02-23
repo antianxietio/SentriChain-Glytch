@@ -357,43 +357,46 @@ export default function OnboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center px-4 py-16">
       {/* Logo / Title */}
-      <div className="mb-8 text-center">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-            SC
+      <div className="mb-10 text-center">
+        <div className="flex items-center justify-center gap-3 mb-3">
+          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
+            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2}
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
           </div>
-          <span className="text-white font-semibold text-lg">SentriChain</span>
+          <span className="text-white font-bold text-xl tracking-tight">SentriChain</span>
         </div>
-        <p className="text-zinc-400 text-sm">
-          Set up your supply chain profile
-        </p>
+        <p className="text-zinc-500">Set up your supply chain profile</p>
       </div>
 
-      {/* Progress bar */}
-      <div className="w-full max-w-lg mb-6">
-        <div className="flex justify-between mb-2">
-          {["Company", "Raw Materials", "Countries", "Review"].map(
+      {/* Progress steps */}
+      <div className="w-full max-w-xl mb-8">
+        <div className="flex justify-between mb-3">
+          {["Company", "Materials", "Countries", "Review"].map(
             (label, i) => (
               <div
                 key={label}
-                className="flex flex-col items-center gap-1 flex-1"
+                className="flex flex-col items-center gap-1.5 flex-1"
               >
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold transition-all
                 ${
                   step > i + 1
-                    ? "bg-indigo-500 text-white"
+                    ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30"
                     : step === i + 1
-                      ? "bg-indigo-600 text-white ring-2 ring-indigo-400"
+                      ? "bg-indigo-600 text-white ring-2 ring-indigo-400/50"
                       : "bg-zinc-800 text-zinc-500"
                 }`}
                 >
                   {step > i + 1 ? "✓" : i + 1}
                 </div>
                 <span
-                  className={`text-xs ${step === i + 1 ? "text-indigo-400" : "text-zinc-600"}`}
+                  className={`text-xs font-medium ${
+                    step === i + 1 ? "text-indigo-400" : step > i + 1 ? "text-zinc-400" : "text-zinc-600"
+                  }`}
                 >
                   {label}
                 </span>
@@ -401,9 +404,9 @@ export default function OnboardPage() {
             ),
           )}
         </div>
-        <div className="h-1 bg-zinc-800 rounded-full">
+        <div className="h-1.5 bg-zinc-800 rounded-full">
           <div
-            className="h-1 bg-indigo-600 rounded-full transition-all duration-500"
+            className="h-1.5 bg-linear-to-r from-indigo-600 to-indigo-400 rounded-full transition-all duration-500"
             style={{ width: `${((step - 1) / 3) * 100}%` }}
           />
         </div>
@@ -411,11 +414,12 @@ export default function OnboardPage() {
 
       {/* Card */}
       {saveError && (
-        <div className="w-full max-w-lg mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+        <div className="w-full max-w-xl mb-4 flex items-center gap-3 p-4 rounded-xl bg-red-500/8 border border-red-500/25 text-red-400 text-sm">
+          <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           {saveError}
         </div>
       )}
-      <div className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl p-8 shadow-xl">
+      <div className="w-full max-w-xl bg-zinc-900 border border-zinc-800 rounded-2xl p-10 shadow-2xl">
         {/* Step 1: Company Info */}
         {step === 1 && (
           <div>
@@ -426,8 +430,8 @@ export default function OnboardPage() {
               This helps us tailor supplier recommendations to your industry.
             </p>
 
-            <label className="block mb-4">
-              <span className="text-zinc-400 text-sm font-medium mb-1 block">
+            <label className="block mb-5">
+              <span className="text-zinc-400 text-sm font-medium mb-2 block">
                 Company Name *
               </span>
               <input
@@ -435,30 +439,37 @@ export default function OnboardPage() {
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
                 placeholder="e.g. Acme Electronics Ltd."
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
               />
             </label>
 
-            <label className="block mb-4">
-              <span className="text-zinc-400 text-sm font-medium mb-1 block">
+            <label className="block mb-5">
+              <span className="text-zinc-400 text-sm font-medium mb-2 block">
                 Industry / Company Type *
               </span>
-              <select
-                value={companyType}
-                onChange={(e) => setCompanyType(e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition appearance-none"
-              >
-                <option value="">Select industry…</option>
-                {COMPANY_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={companyType}
+                  onChange={(e) => setCompanyType(e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all appearance-none cursor-pointer pr-10"
+                >
+                  <option value="">Select industry…</option>
+                  {COMPANY_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                  <svg className="w-4 h-4 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </label>
 
             <label className="block">
-              <span className="text-zinc-400 text-sm font-medium mb-1 block">
+              <span className="text-zinc-400 text-sm font-medium mb-2 block">
                 Additional Notes{" "}
                 <span className="text-zinc-600">(optional)</span>
               </span>
@@ -467,7 +478,7 @@ export default function OnboardPage() {
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
                 placeholder="Any specific requirements or context…"
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition resize-none"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all resize-none"
               />
             </label>
           </div>
@@ -600,11 +611,11 @@ export default function OnboardPage() {
         )}
 
         {/* Navigation */}
-        <div className="flex justify-between mt-8">
+        <div className="flex justify-between mt-10">
           <button
             onClick={() => setStep((s) => Math.max(1, s - 1))}
             disabled={step === 1}
-            className="px-4 py-2 rounded-lg text-sm text-zinc-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed border border-transparent hover:border-zinc-700 transition-all"
           >
             ← Back
           </button>
@@ -613,7 +624,7 @@ export default function OnboardPage() {
             <button
               onClick={() => setStep((s) => s + 1)}
               disabled={!canProceed}
-              className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition"
+              className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl shadow-lg shadow-indigo-500/20 transition-all"
             >
               Continue →
             </button>
@@ -621,7 +632,7 @@ export default function OnboardPage() {
             <button
               onClick={handleSubmit}
               disabled={saving}
-              className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-sm font-medium rounded-lg transition flex items-center gap-2"
+              className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-sm font-semibold rounded-xl shadow-lg shadow-indigo-500/20 transition-all"
             >
               {saving && (
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

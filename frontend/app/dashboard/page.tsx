@@ -23,6 +23,7 @@ import RiskCard from "@/components/RiskCard";
 import CostCard from "@/components/CostCard";
 import AlternativesCard from "@/components/AlternativesCard";
 import SummaryCard from "@/components/SummaryCard";
+import Globe from "@/components/Globe";
 
 /* ── History entry stored in localStorage ─────────────────────────── */
 interface HistoryEntry {
@@ -144,7 +145,9 @@ export default function DashboardPage() {
         try {
           const p = await getOnboardProfile(tok);
           if (p) setProfile(p);
-        } catch { /* No profile yet */ }
+        } catch {
+          /* No profile yet */
+        }
       }
     })();
   }, []);
@@ -195,97 +198,97 @@ export default function DashboardPage() {
   // Material → leading-country map (mirrors backend logic)
   const MATERIAL_COUNTRY_MAP: Record<string, string[]> = {
     // Electronics
-    "Semiconductors":                   ["Taiwan", "South Korea", "China"],
-    "PCBs":                             ["China", "Taiwan", "South Korea"],
-    "Display Panels":                   ["South Korea", "China", "Taiwan"],
-    "Batteries":                        ["China", "South Korea"],
-    "Rare Earth Elements":              ["China"],
-    "Sensors & Actuators":              ["Germany", "Japan", "South Korea"],
-    "Capacitors & Resistors":           ["Japan", "China", "South Korea"],
-    "Microcontrollers":                 ["Taiwan", "South Korea"],
-    "Optical Components":               ["Japan", "Germany", "Taiwan"],
+    Semiconductors: ["Taiwan", "South Korea", "China"],
+    PCBs: ["China", "Taiwan", "South Korea"],
+    "Display Panels": ["South Korea", "China", "Taiwan"],
+    Batteries: ["China", "South Korea"],
+    "Rare Earth Elements": ["China"],
+    "Sensors & Actuators": ["Germany", "Japan", "South Korea"],
+    "Capacitors & Resistors": ["Japan", "China", "South Korea"],
+    Microcontrollers: ["Taiwan", "South Korea"],
+    "Optical Components": ["Japan", "Germany", "Taiwan"],
     // Manufacturing / Automotive
-    "Steel":                            ["India", "China", "Germany"],
-    "Aluminum":                         ["China", "India", "Germany"],
-    "Aluminum Alloys":                  ["China", "Germany", "Japan"],
-    "Copper":                           ["China", "India", "South Korea"],
-    "Precision Parts":                  ["Germany", "India", "Taiwan"],
-    "Wiring & Connectors":              ["Vietnam", "China", "India"],
-    "Hydraulic Parts":                  ["Germany", "India"],
-    "Motors":                           ["Germany", "India", "China"],
-    "Rubber & Seals":                   ["Malaysia", "Thailand", "Vietnam"],
-    "Fasteners & Bearings":             ["China", "India", "Germany"],
-    "Plastics & Polymers":              ["China", "Germany", "South Korea"],
-    "Glass & Glazing":                  ["China", "Germany", "India"],
-    "Paints & Coatings":                ["Germany", "India", "China"],
-    "Machine Tools":                    ["Germany", "Japan", "China"],
+    Steel: ["India", "China", "Germany"],
+    Aluminum: ["China", "India", "Germany"],
+    "Aluminum Alloys": ["China", "Germany", "Japan"],
+    Copper: ["China", "India", "South Korea"],
+    "Precision Parts": ["Germany", "India", "Taiwan"],
+    "Wiring & Connectors": ["Vietnam", "China", "India"],
+    "Hydraulic Parts": ["Germany", "India"],
+    Motors: ["Germany", "India", "China"],
+    "Rubber & Seals": ["Malaysia", "Thailand", "Vietnam"],
+    "Fasteners & Bearings": ["China", "India", "Germany"],
+    "Plastics & Polymers": ["China", "Germany", "South Korea"],
+    "Glass & Glazing": ["China", "Germany", "India"],
+    "Paints & Coatings": ["Germany", "India", "China"],
+    "Machine Tools": ["Germany", "Japan", "China"],
     // Pharmaceuticals
     "Active Pharmaceutical Ingredients (APIs)": ["India", "China", "Germany"],
-    "Excipients & Binders":             ["India", "Germany", "China"],
-    "Chemical Solvents":                ["Germany", "China", "India"],
-    "Biologic Raw Materials":           ["Germany", "USA", "India"],
-    "Reagents & Buffers":               ["Germany", "USA", "Japan"],
-    "Sterile Packaging":                ["Germany", "India", "China"],
-    "Medical Glass & Vials":            ["Germany", "India"],
-    "Drug Delivery Devices":            ["Germany", "India", "USA"],
-    "Laboratory Chemicals":             ["Germany", "Japan", "USA"],
-    "Filtration Membranes":             ["Germany", "Japan", "India"],
-    "Cold-Chain Containers":            ["Germany", "South Korea", "USA"],
+    "Excipients & Binders": ["India", "Germany", "China"],
+    "Chemical Solvents": ["Germany", "China", "India"],
+    "Biologic Raw Materials": ["Germany", "USA", "India"],
+    "Reagents & Buffers": ["Germany", "USA", "Japan"],
+    "Sterile Packaging": ["Germany", "India", "China"],
+    "Medical Glass & Vials": ["Germany", "India"],
+    "Drug Delivery Devices": ["Germany", "India", "USA"],
+    "Laboratory Chemicals": ["Germany", "Japan", "USA"],
+    "Filtration Membranes": ["Germany", "Japan", "India"],
+    "Cold-Chain Containers": ["Germany", "South Korea", "USA"],
     // Aerospace
-    "Titanium Alloys":                  ["Japan", "Germany", "China"],
-    "Carbon Fiber Composites":          ["Japan", "Germany", "South Korea"],
-    "High-Temperature Alloys":          ["Germany", "Japan", "USA"],
-    "Avionics Components":              ["USA", "Germany", "Japan"],
-    "Thermal Insulation":               ["Germany", "Japan", "China"],
-    "Fuel System Components":           ["Germany", "Japan", "USA"],
+    "Titanium Alloys": ["Japan", "Germany", "China"],
+    "Carbon Fiber Composites": ["Japan", "Germany", "South Korea"],
+    "High-Temperature Alloys": ["Germany", "Japan", "USA"],
+    "Avionics Components": ["USA", "Germany", "Japan"],
+    "Thermal Insulation": ["Germany", "Japan", "China"],
+    "Fuel System Components": ["Germany", "Japan", "USA"],
     // Energy
-    "Solar Panels":                     ["China", "South Korea"],
-    "Turbine Components":               ["Germany", "India", "China"],
-    "Cables & Conductors":              ["China", "Germany", "India"],
-    "Transformers":                     ["China", "Germany", "India"],
-    "Insulation Materials":             ["China", "Germany"],
-    "Pumps & Valves":                   ["Germany", "India", "China"],
+    "Solar Panels": ["China", "South Korea"],
+    "Turbine Components": ["Germany", "India", "China"],
+    "Cables & Conductors": ["China", "Germany", "India"],
+    Transformers: ["China", "Germany", "India"],
+    "Insulation Materials": ["China", "Germany"],
+    "Pumps & Valves": ["Germany", "India", "China"],
     // Construction
-    "Cement & Concrete Additives":      ["India", "China", "Vietnam"],
-    "Lumber & Wood Products":           ["Vietnam", "Malaysia", "Indonesia"],
+    "Cement & Concrete Additives": ["India", "China", "Vietnam"],
+    "Lumber & Wood Products": ["Vietnam", "Malaysia", "Indonesia"],
     // Food & Beverage
-    "Packaging Materials":              ["China", "Vietnam", "India"],
-    "Food-Grade Chemicals":             ["Germany", "USA", "China"],
-    "Flavoring Agents":                 ["China", "India", "Germany"],
-    "Preservatives & Additives":        ["China", "Germany", "India"],
-    "Enzymes & Cultures":               ["Germany", "China"],
-    "Sweeteners":                       ["China", "India"],
-    "Fats & Oils":                      ["Malaysia", "Indonesia", "India"],
-    "Starches & Proteins":              ["China", "India", "USA"],
-    "Agricultural Raw Materials":       ["India", "Vietnam", "Thailand"],
-    "Natural Colors & Extracts":        ["India", "China"],
-    "Cleaning & Sanitation Agents":     ["Germany", "China", "India"],
+    "Packaging Materials": ["China", "Vietnam", "India"],
+    "Food-Grade Chemicals": ["Germany", "USA", "China"],
+    "Flavoring Agents": ["China", "India", "Germany"],
+    "Preservatives & Additives": ["China", "Germany", "India"],
+    "Enzymes & Cultures": ["Germany", "China"],
+    Sweeteners: ["China", "India"],
+    "Fats & Oils": ["Malaysia", "Indonesia", "India"],
+    "Starches & Proteins": ["China", "India", "USA"],
+    "Agricultural Raw Materials": ["India", "Vietnam", "Thailand"],
+    "Natural Colors & Extracts": ["India", "China"],
+    "Cleaning & Sanitation Agents": ["Germany", "China", "India"],
     // Textiles
-    "Cotton Fiber":                     ["India", "China", "Bangladesh"],
+    "Cotton Fiber": ["India", "China", "Bangladesh"],
     "Synthetic Fibers (Nylon/Polyester)": ["China", "India", "Vietnam"],
-    "Wool & Natural Fibers":            ["India", "China"],
-    "Dyes & Pigments":                  ["India", "China", "Germany"],
-    "Chemical Treatments":              ["Germany", "China", "India"],
-    "Industrial Threads":               ["China", "India", "Vietnam"],
-    "Elastane & Spandex":               ["China", "South Korea"],
-    "Adhesives & Coatings":             ["Germany", "China", "India"],
+    "Wool & Natural Fibers": ["India", "China"],
+    "Dyes & Pigments": ["India", "China", "Germany"],
+    "Chemical Treatments": ["Germany", "China", "India"],
+    "Industrial Threads": ["China", "India", "Vietnam"],
+    "Elastane & Spandex": ["China", "South Korea"],
+    "Adhesives & Coatings": ["Germany", "China", "India"],
     // Chemical
-    "Industrial Chemicals":             ["Germany", "China", "India"],
-    "Solvents":                         ["Germany", "China", "India"],
-    "Catalysts":                        ["Germany", "Japan", "China"],
-    "Reagents":                         ["Germany", "USA", "Japan"],
-    "Acids & Bases":                    ["Germany", "China", "India"],
-    "Specialty Gases":                  ["Germany", "Japan", "South Korea"],
-    "Surfactants":                      ["Germany", "China", "India"],
-    "Petrochemicals":                   ["China", "India", "South Korea"],
+    "Industrial Chemicals": ["Germany", "China", "India"],
+    Solvents: ["Germany", "China", "India"],
+    Catalysts: ["Germany", "Japan", "China"],
+    Reagents: ["Germany", "USA", "Japan"],
+    "Acids & Bases": ["Germany", "China", "India"],
+    "Specialty Gases": ["Germany", "Japan", "South Korea"],
+    Surfactants: ["Germany", "China", "India"],
+    Petrochemicals: ["China", "India", "South Korea"],
     // Logistics
-    "Vehicle Components":               ["Germany", "Japan", "China"],
-    "Fuel Additives":                   ["Germany", "China", "India"],
-    "Lubricants & Oils":                ["Germany", "China", "India"],
-    "Conveyor Components":              ["Germany", "China", "India"],
-    "Safety Equipment":                 ["Germany", "China", "South Korea"],
-    "Pallets & Load Carriers":          ["China", "Vietnam", "India"],
-    "Warehouse Equipment":              ["China", "Germany", "South Korea"],
+    "Vehicle Components": ["Germany", "Japan", "China"],
+    "Fuel Additives": ["Germany", "China", "India"],
+    "Lubricants & Oils": ["Germany", "China", "India"],
+    "Conveyor Components": ["Germany", "China", "India"],
+    "Safety Equipment": ["Germany", "China", "South Korea"],
+    "Pallets & Load Carriers": ["China", "Vietnam", "India"],
+    "Warehouse Equipment": ["China", "Germany", "South Korea"],
   };
 
   // Suppliers sorted so profile-matching ones appear first
@@ -314,7 +317,7 @@ export default function DashboardPage() {
       if (bScore !== aScore) return bScore - aScore;
       return a.supplier_name.localeCompare(b.supplier_name);
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [suppliers, profile]);
 
   const selectedSupplier = suppliers.find((s) => s.id === selectedSupplierId);
@@ -396,7 +399,8 @@ export default function DashboardPage() {
     setRefreshing(true);
     setRefreshMsg(null);
     try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("sc_token") : null;
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("sc_token") : null;
       const res = await fetch("http://localhost:8000/api/refresh-risk", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
@@ -475,52 +479,128 @@ export default function DashboardPage() {
             <div className="relative">
               <button
                 onClick={() => setUserMenuOpen((v) => !v)}
-                className="flex items-center gap-2 text-sm text-zinc-300 hover:text-zinc-100 transition-colors"
+                className="flex items-center gap-2.5 pl-1.5 pr-3.5 py-1.5 rounded-xl border border-zinc-800 bg-zinc-900/50 hover:border-zinc-600 hover:bg-zinc-800/70 transition-all"
               >
-                <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-semibold text-white select-none">
+                <div className="w-8 h-8 rounded-lg bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-sm font-bold text-white select-none shrink-0">
                   {user.full_name.charAt(0).toUpperCase()}
                 </div>
-                <span className="hidden sm:block text-xs">
-                  {user.full_name.split(" ")[0]}
-                </span>
-                <span
-                  className={`text-xs px-1.5 py-0.5 rounded font-medium ${
-                    user.role === "admin"
-                      ? "bg-amber-500/10 text-amber-400"
-                      : "bg-indigo-500/10 text-indigo-400"
-                  }`}
+                <div className="hidden sm:block text-left">
+                  <p className="text-sm font-medium text-zinc-200 leading-tight">
+                    {user.full_name.split(" ")[0]}
+                  </p>
+                  <p
+                    className={`text-[11px] font-medium capitalize ${
+                      user.role === "admin"
+                        ? "text-amber-400"
+                        : "text-indigo-400"
+                    }`}
+                  >
+                    {user.role}
+                  </p>
+                </div>
+                <svg
+                  className="w-3.5 h-3.5 text-zinc-600 hidden sm:block"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
                 >
-                  {user.role}
-                </span>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
               </button>
               {userMenuOpen && (
-                <div className="absolute right-0 top-10 w-44 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl overflow-hidden z-50">
+                <div className="absolute right-0 top-12 w-52 bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden z-50">
+                  <div className="px-4 py-3 border-b border-zinc-800">
+                    <p className="text-sm font-semibold text-zinc-100">
+                      {user.full_name}
+                    </p>
+                    <p className="text-xs text-zinc-500 mt-0.5">{user.email}</p>
+                  </div>
                   <Link
                     href="/profile"
-                    className="block px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
                     onClick={() => setUserMenuOpen(false)}
                   >
+                    <svg
+                      className="w-4 h-4 text-zinc-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.8}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
                     Profile &amp; settings
                   </Link>
                   <Link
                     href="/onboard"
-                    className="block px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
                     onClick={() => setUserMenuOpen(false)}
                   >
+                    <svg
+                      className="w-4 h-4 text-zinc-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.8}
+                        d="M4 6h16M4 12h16M4 18h7"
+                      />
+                    </svg>
                     Update company profile
                   </Link>
                   <button
-                    onClick={() => { handleRefreshRisk(); setUserMenuOpen(false); }}
+                    onClick={() => {
+                      handleRefreshRisk();
+                      setUserMenuOpen(false);
+                    }}
                     disabled={refreshing}
-                    className="w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-indigo-400 transition-colors border-t border-zinc-800 disabled:opacity-50"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-indigo-400 transition-colors border-t border-zinc-800 disabled:opacity-50"
                   >
+                    <svg
+                      className="w-4 h-4 text-zinc-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.8}
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                      />
+                    </svg>
                     {refreshing ? "Refreshing…" : "Refresh risk data"}
                   </button>
                   <button
                     onClick={handleReonboard}
-                    className="w-full text-left px-4 py-2.5 text-sm text-zinc-400 hover:bg-zinc-800 hover:text-red-400 transition-colors border-t border-zinc-800"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-500 hover:bg-zinc-800 hover:text-red-400 transition-colors border-t border-zinc-800"
                   >
-                    Reset & re-onboard
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.8}
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                      />
+                    </svg>
+                    Reset &amp; re-onboard
                   </button>
                 </div>
               )}
@@ -529,25 +609,54 @@ export default function DashboardPage() {
         </div>
 
         {/* Tab bar */}
-        <div className="max-w-7xl mx-auto px-6 flex gap-1 border-t border-zinc-800/50">
+        <div className="max-w-screen-2xl mx-auto px-8 flex gap-1 border-t border-zinc-800/60">
           {(
             [
-              { id: "overview", label: "Overview" },
-              { id: "recommendations", label: "Best Matches" },
-              { id: "analysis", label: "Deep Analysis" },
-              { id: "compare", label: "Compare Countries" },
-            ] as { id: Tab; label: string }[]
-          ).map(({ id, label }) => (
+              {
+                id: "overview",
+                label: "Overview",
+                icon: "M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z",
+              },
+              {
+                id: "recommendations",
+                label: "Best Matches",
+                icon: "M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z",
+              },
+              {
+                id: "analysis",
+                label: "Deep Analysis",
+                icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z",
+              },
+              {
+                id: "compare",
+                label: "Compare Countries",
+                icon: "M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4",
+              },
+            ] as { id: Tab; label: string; icon: string }[]
+          ).map(({ id, label, icon }) => (
             <button
               key={id}
               onClick={() => setTab(id)}
-              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+              className={`flex items-center gap-2 px-4 py-3.5 text-sm font-medium border-b-2 transition-all ${
                 tab === id
-                  ? "border-indigo-500 text-indigo-400"
-                  : "border-transparent text-zinc-500 hover:text-zinc-300"
+                  ? "border-indigo-500 text-indigo-300"
+                  : "border-transparent text-zinc-500 hover:text-zinc-200 hover:border-zinc-600"
               }`}
             >
-              {label}
+              <svg
+                className="w-4 h-4 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.8}
+                  d={icon}
+                />
+              </svg>
+              <span className="hidden sm:inline">{label}</span>
             </button>
           ))}
         </div>
@@ -612,117 +721,165 @@ export default function DashboardPage() {
         )}
 
         {/* ── Main content ────────────────────────────────────────── */}
-        <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-8">
-          {/* ═══ TAB: OVERVIEW ═══ */}
-          {tab === "overview" && (
-            <div>
-              <div className="mb-4">
-                <h1 className="text-xl font-semibold text-zinc-100">
-                  {profile?.company_name
-                    ? `Suppliers for ${profile.company_name}`
-                    : "Supplier Overview"}
-                </h1>
-                <p className="text-zinc-500 text-sm mt-0.5">
-                  {profile?.raw_materials?.length
-                    ? `${profile.company_type ? `Filtered to ${profile.company_type} suppliers` : "Showing suppliers"} — materials: ${profile.raw_materials.slice(0, 3).join(", ")}${profile.raw_materials.length > 3 ? ` +${profile.raw_materials.length - 3} more` : ""}`
-                    : "All suppliers sorted by country, with logistics and economic factors"}
-                </p>
-              </div>
-              {/* Profile context banner */}
-              {profile && (
-                <div className="mb-6 flex flex-wrap items-center gap-3 p-3 bg-indigo-600/10 border border-indigo-600/20 rounded-xl text-xs">
-                  <span className="text-indigo-400 font-medium">{profile.company_type}</span>
-                  {profile.preferred_countries.length > 0 && (
-                    <span className="text-zinc-400">
-                      Preferred sources:{" "}
-                      <span className="text-zinc-200">{profile.preferred_countries.join(", ")}</span>
-                    </span>
-                  )}
-                  {profile.raw_materials.length > 0 && (
-                    <span className="text-zinc-400">
-                      Materials:{" "}
-                      <span className="text-zinc-200">{profile.raw_materials.slice(0, 4).join(", ")}{profile.raw_materials.length > 4 ? ` +${profile.raw_materials.length - 4}` : ""}</span>
-                    </span>
-                  )}
-                  <a href="/onboard" className="ml-auto text-indigo-400 hover:text-indigo-300 transition-colors">Edit profile →</a>
-                </div>
-              )}
-              {overviewLoading && <OverviewSkeleton />}
-              {overviewError && <ErrorBanner msg={overviewError} />}
-              {overview && (
-                <OverviewContent
-                  overview={overview}
-                  profile={profile}
-                  onDeepAnalyze={(id) => {
-                    setTab("analysis");
-                    handleSupplierSelect(id);
-                  }}
-                />
-              )}
-            </div>
-          )}
-
-          {/* ═══ TAB: COMPARE ═══ */}
-          {tab === "compare" && (
-            <div>
-              {overviewLoading && <OverviewSkeleton />}
-              {overviewError && <ErrorBanner msg={overviewError} />}
-              {overview && (
-                <CompareContent
-                  overview={overview}
-                  profile={profile}
-                />
-              )}
-            </div>
-          )}
-
-          {/* ═══ TAB: RECOMMENDATIONS ═══ */}
-          {tab === "recommendations" && (
-            <div>
-              <div className="mb-6">
-                <h1 className="text-xl font-semibold text-zinc-100">
-                  Best Matches for Your Profile
-                </h1>
-                <p className="text-zinc-500 text-sm mt-0.5">
-                  Ranked by raw materials match, preferred countries,
-                  reliability and risk
-                </p>
-              </div>
-              {recsLoading && <RecsSkeleton />}
-              {recsError && <ErrorBanner msg={recsError} />}
-              {recs && (
-                <RecsContent
-                  recs={recs}
-                  onDeepAnalyze={(id) => {
-                    setTab("analysis");
-                    handleSupplierSelect(id);
-                  }}
-                />
-              )}
-            </div>
-          )}
-
-          {/* ═══ TAB: DEEP ANALYSIS ═══ */}
-          {tab === "analysis" && (
-            <div>
-              {/* Page heading + export */}
-              <div className="mb-8 flex items-start justify-between gap-4">
-                <div>
-                  <h1 className="text-xl font-semibold text-zinc-100">
-                    Deep Analysis
+        <main className="flex-1 min-w-0">
+          <div className="max-w-7xl mx-auto px-8 py-10 fade-up">
+            {/* ═══ TAB: OVERVIEW ═══ */}
+            {tab === "overview" && (
+              <div>
+                <div className="mb-6">
+                  <h1 className="text-3xl font-bold text-zinc-100 tracking-tight">
+                    {profile?.company_name
+                      ? `${profile.company_name}`
+                      : "Supplier Overview"}
                   </h1>
-                  <p className="text-zinc-500 text-sm mt-0.5">
-                    Multi-agent supply chain risk analysis — schedule variance,
-                    geopolitical signals, ensemble scoring
+                  <p className="text-zinc-500 mt-1.5">
+                    {profile?.raw_materials?.length
+                      ? `${profile.company_type ? `Filtered to ${profile.company_type} suppliers` : "Showing suppliers"} — materials: ${profile.raw_materials.slice(0, 3).join(", ")}${profile.raw_materials.length > 3 ? ` +${profile.raw_materials.length - 3} more` : ""}`
+                      : "All suppliers sorted by country, with logistics and economic factors"}
                   </p>
                 </div>
-                {analysisData && selectedSupplier && (
-                  <button
-                    onClick={handleExport}
-                    className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border border-zinc-700 text-zinc-400 hover:text-zinc-100 hover:border-zinc-500 transition-colors shrink-0"
-                  >
+                {/* Profile context banner */}
+                {profile && (
+                  <div className="mb-6 flex flex-wrap items-center gap-4 p-4 bg-indigo-600/8 border border-indigo-600/20 rounded-2xl">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-indigo-500" />
+                      <span className="text-indigo-300 font-semibold">
+                        {profile.company_type}
+                      </span>
+                    </div>
+                    {profile.preferred_countries.length > 0 && (
+                      <span className="text-zinc-500 text-sm">
+                        Preferred sources: 
+                        <span className="text-zinc-200">
+                          {profile.preferred_countries.join(", ")}
+                        </span>
+                      </span>
+                    )}
+                    {profile.raw_materials.length > 0 && (
+                      <span className="text-zinc-500 text-sm">
+                        Materials: 
+                        <span className="text-zinc-200">
+                          {profile.raw_materials.slice(0, 4).join(", ")}
+                          {profile.raw_materials.length > 4
+                            ? ` +${profile.raw_materials.length - 4}`
+                            : ""}
+                        </span>
+                      </span>
+                    )}
+                    <a
+                      href="/onboard"
+                      className="ml-auto text-indigo-400 hover:text-indigo-300 text-sm font-medium transition-colors"
+                    >
+                      Edit profile →
+                    </a>
+                  </div>
+                )}
+                {overviewLoading && <OverviewSkeleton />}
+                {overviewError && <ErrorBanner msg={overviewError} />}
+                {overview && (
+                  <OverviewContent
+                    overview={overview}
+                    profile={profile}
+                    onDeepAnalyze={(id) => {
+                      setTab("analysis");
+                      handleSupplierSelect(id);
+                    }}
+                  />
+                )}
+              </div>
+            )}
+
+            {/* ═══ TAB: COMPARE ═══ */}
+            {tab === "compare" && (
+              <div>
+                <div className="mb-8">
+                  <h1 className="text-3xl font-bold text-zinc-100 tracking-tight">
+                    Compare Countries
+                  </h1>
+                  <p className="text-zinc-500 mt-1.5">
+                    Side-by-side supply chain risk metrics across sourcing
+                    regions
+                  </p>
+                </div>
+                {overviewLoading && <OverviewSkeleton />}
+                {overviewError && <ErrorBanner msg={overviewError} />}
+                {overview && (
+                  <div className="space-y-6">
+                    <Globe overview={overview} />
+                    <CompareContent overview={overview} profile={profile} />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ═══ TAB: RECOMMENDATIONS ═══ */}
+            {tab === "recommendations" && (
+              <div>
+                <div className="mb-8">
+                  <h1 className="text-3xl font-bold text-zinc-100 tracking-tight">
+                    Best Matches
+                  </h1>
+                  <p className="text-zinc-500 mt-1.5">
+                    Ranked by raw materials match, preferred countries,
+                    reliability and risk
+                  </p>
+                </div>
+                {recsLoading && <RecsSkeleton />}
+                {recsError && <ErrorBanner msg={recsError} />}
+                {recs && (
+                  <RecsContent
+                    recs={recs}
+                    onDeepAnalyze={(id) => {
+                      setTab("analysis");
+                      handleSupplierSelect(id);
+                    }}
+                  />
+                )}
+              </div>
+            )}
+
+            {/* ═══ TAB: DEEP ANALYSIS ═══ */}
+            {tab === "analysis" && (
+              <div>
+                {/* Page heading + export */}
+                <div className="mb-8 flex items-start justify-between gap-4">
+                  <div>
+                    <h1 className="text-3xl font-bold text-zinc-100 tracking-tight">
+                      Deep Analysis
+                    </h1>
+                    <p className="text-zinc-500 mt-1.5">
+                      Multi-agent supply chain risk — schedule variance,
+                      geopolitical signals and ensemble scoring
+                    </p>
+                  </div>
+                  {analysisData && selectedSupplier && (
+                    <button
+                      onClick={handleExport}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-zinc-700 text-zinc-400 hover:text-zinc-100 hover:border-zinc-500 bg-zinc-900/50 hover:bg-zinc-800 transition-all shrink-0"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.8}
+                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                      Export report
+                    </button>
+                  )}
+                </div>
+
+                {/* Error banner */}
+                {error && (
+                  <div className="mb-6 flex items-start gap-3 p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
                     <svg
-                      className="w-3.5 h-3.5"
+                      className="w-4 h-4 mt-0.5 shrink-0"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -731,188 +888,168 @@ export default function DashboardPage() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
                       />
                     </svg>
-                    Export report
-                  </button>
-                )}
-              </div>
-
-              {/* Error banner */}
-              {error && (
-                <div className="mb-6 flex items-start gap-3 p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
-                  <svg
-                    className="w-4 h-4 mt-0.5 shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
-                    />
-                  </svg>
-                  <span>{error}</span>
-                </div>
-              )}
-
-              {/* Supplier selector */}
-              <div className="mb-6 max-w-xl">
-                {isLoadingSuppliers ? (
-                  <div className="space-y-2 animate-pulse">
-                    <div className="h-3 bg-zinc-800 rounded w-24" />
-                    <div className="h-10 bg-zinc-800 rounded" />
+                    <span>{error}</span>
                   </div>
-                ) : (
-                  <SupplierSelector
-                    suppliers={sortedSuppliers}
-                    selectedId={selectedSupplierId}
-                    onSelect={handleSupplierSelect}
-                    disabled={isAnalyzing}
-                    profile={profile}
-                  />
                 )}
-              </div>
 
-              {/* Analyzing spinner */}
-              {isAnalyzing && (
-                <div className="flex items-center gap-3 py-12 text-zinc-400 text-sm">
-                  <div className="w-5 h-5 border-2 border-zinc-700 border-t-indigo-500 rounded-full animate-spin" />
-                  <span>
-                    Running agent pipeline for{" "}
-                    {selectedSupplier?.supplier_name ?? "supplier"}…
-                  </span>
-                </div>
-              )}
-
-              {/* Results */}
-              {analysisData && !isAnalyzing && (
-                <>
-                  {/* Supplier meta strip */}
-                  {selectedSupplier && (
-                    <div className="mb-6 flex flex-wrap items-center gap-4 p-4 bg-zinc-900 border border-zinc-800 rounded-xl text-sm">
-                      <div>
-                        <span className="text-zinc-500 text-xs">Supplier</span>
-                        <p className="text-zinc-100 font-medium">
-                          {selectedSupplier.supplier_name}
-                        </p>
-                      </div>
-                      <div className="w-px h-8 bg-zinc-800" />
-                      <div>
-                        <span className="text-zinc-500 text-xs">Country</span>
-                        <p className="text-zinc-100 font-medium">
-                          {selectedSupplier.country}
-                        </p>
-                      </div>
-                      <div className="w-px h-8 bg-zinc-800" />
-                      <div>
-                        <span className="text-zinc-500 text-xs">
-                          Reliability
-                        </span>
-                        <p className="text-zinc-100 font-mono font-medium">
-                          {selectedSupplier.reliability_score.toFixed(0)}%
-                        </p>
-                      </div>
-                      <div className="w-px h-8 bg-zinc-800" />
-                      <div>
-                        <span className="text-zinc-500 text-xs">
-                          Avg Lead Time
-                        </span>
-                        <p className="text-zinc-100 font-mono font-medium">
-                          {selectedSupplier.average_delivery_time}d
-                        </p>
-                      </div>
-                      <div className="w-px h-8 bg-zinc-800" />
-                      <div>
-                        <span className="text-zinc-500 text-xs">
-                          Cost Class
-                        </span>
-                        <p className="text-zinc-100 font-medium capitalize">
-                          {selectedSupplier.cost_competitiveness}
-                        </p>
-                      </div>
-                      <div className="w-px h-8 bg-zinc-800" />
-                      <div>
-                        <span className="text-zinc-500 text-xs">
-                          Ensemble Risk
-                        </span>
-                        <p
-                          className={`font-mono font-semibold text-sm ${
-                            analysisData.ensemble.final_score >= 0.7
-                              ? "text-red-400"
-                              : analysisData.ensemble.final_score >= 0.4
-                                ? "text-amber-400"
-                                : "text-emerald-400"
-                          }`}
-                        >
-                          {analysisData.ensemble.final_score.toFixed(3)}
-                        </p>
-                      </div>
+                {/* Supplier selector */}
+                <div className="mb-8 max-w-2xl">
+                  {isLoadingSuppliers ? (
+                    <div className="space-y-2 animate-pulse">
+                      <div className="h-4 bg-zinc-800 rounded w-28" />
+                      <div className="h-12 bg-zinc-800 rounded-xl" />
                     </div>
+                  ) : (
+                    <SupplierSelector
+                      suppliers={sortedSuppliers}
+                      selectedId={selectedSupplierId}
+                      onSelect={handleSupplierSelect}
+                      disabled={isAnalyzing}
+                      profile={profile}
+                    />
                   )}
+                </div>
 
-                  {/* Cards grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <RiskCard
-                      schedule={analysisData.schedule}
-                      ensemble={analysisData.ensemble}
-                    />
-                    <SummaryCard
-                      summary={analysisData.summary}
-                      geoRisk={analysisData.geoRisk}
-                      agents={analysisData.agent_scores}
-                      confidence={analysisData.confidence}
-                      cv={analysisData.ensemble.coefficient_of_variation}
-                    />
-                    <CostCard
-                      currency={analysisData.costImpact.currency}
-                      estimatedCost={analysisData.costImpact.estimated_cost}
-                    />
-                    <AlternativesCard
-                      alternatives={analysisData.alternatives}
-                      currentIndustry={selectedSupplier?.industry}
-                    />
+                {/* Analyzing spinner */}
+                {isAnalyzing && (
+                  <div className="flex items-center gap-4 py-16">
+                    <div className="w-6 h-6 border-2 border-zinc-800 border-t-indigo-500 rounded-full animate-spin" />
+                    <div>
+                      <p className="text-zinc-300 font-medium">
+                        Running agent pipeline…
+                      </p>
+                      <p className="text-zinc-600 text-sm mt-0.5">
+                        Analysing{" "}
+                        {selectedSupplier?.supplier_name ?? "supplier"}
+                      </p>
+                    </div>
                   </div>
-                </>
-              )}
+                )}
 
-              {/* Empty state */}
-              {!analysisData && !isAnalyzing && !isLoadingSuppliers && (
-                <div className="text-center py-20 text-zinc-600">
-                  <svg
-                    className="w-10 h-10 mx-auto mb-4 text-zinc-800"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                  <p className="text-sm text-zinc-500 mb-1">
-                    Select a supplier to run analysis
-                  </p>
-                  {history.length > 0 && (
-                    <p className="text-xs text-zinc-600">
-                      Or{" "}
+                {/* Results */}
+                {analysisData && !isAnalyzing && (
+                  <>
+                    {/* Supplier meta strip */}
+                    {selectedSupplier && (
+                      <div className="mb-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px bg-zinc-800 border border-zinc-800 rounded-2xl overflow-hidden">
+                        {[
+                          {
+                            label: "Supplier",
+                            value: selectedSupplier.supplier_name,
+                            mono: false,
+                          },
+                          {
+                            label: "Country",
+                            value: selectedSupplier.country,
+                            mono: false,
+                          },
+                          {
+                            label: "Industry",
+                            value: selectedSupplier.industry ?? "—",
+                            mono: false,
+                          },
+                          {
+                            label: "Reliability",
+                            value: `${selectedSupplier.reliability_score.toFixed(0)}%`,
+                            mono: true,
+                          },
+                          {
+                            label: "Lead Time",
+                            value: `${selectedSupplier.average_delivery_time}d`,
+                            mono: true,
+                          },
+                          {
+                            label: "Ensemble Risk",
+                            value: analysisData.ensemble.final_score.toFixed(3),
+                            color:
+                              analysisData.ensemble.final_score >= 0.7
+                                ? "text-red-300"
+                                : analysisData.ensemble.final_score >= 0.4
+                                  ? "text-amber-300"
+                                  : "text-emerald-300",
+                            mono: true,
+                          },
+                        ].map(({ label, value, mono, color }) => (
+                          <div key={label} className="bg-zinc-900 px-5 py-4">
+                            <p className="text-xs text-zinc-500 mb-1.5 uppercase tracking-wide">
+                              {label}
+                            </p>
+                            <p
+                              className={`font-semibold text-base truncate ${mono ? "font-mono" : ""} ${color ?? "text-zinc-100"}`}
+                            >
+                              {value}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Cards grid — 2 col on large screens */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                      <RiskCard
+                        schedule={analysisData.schedule}
+                        ensemble={analysisData.ensemble}
+                      />
+                      <SummaryCard
+                        summary={analysisData.summary}
+                        geoRisk={analysisData.geoRisk}
+                        agents={analysisData.agent_scores}
+                        confidence={analysisData.confidence}
+                        cv={analysisData.ensemble.coefficient_of_variation}
+                      />
+                      <CostCard
+                        currency={analysisData.costImpact.currency}
+                        estimatedCost={analysisData.costImpact.estimated_cost}
+                      />
+                      <AlternativesCard
+                        alternatives={analysisData.alternatives}
+                        currentIndustry={selectedSupplier?.industry}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* Empty state */}
+                {!analysisData && !isAnalyzing && !isLoadingSuppliers && (
+                  <div className="text-center py-28">
+                    <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+                      <svg
+                        className="w-10 h-10 text-zinc-700"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-semibold text-zinc-300 mb-2">
+                      Select a supplier to begin
+                    </h3>
+                    <p className="text-zinc-600">
+                      Choose a supplier from the dropdown above to run the
+                      multi-agent risk pipeline
+                    </p>
+                    {history.length > 0 && (
                       <button
                         onClick={() => setHistoryOpen(true)}
-                        className="text-indigo-400 hover:underline"
+                        className="mt-4 text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
                       >
-                        restore a previous result
+                        Or restore a previous analysis →
                       </button>
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </main>
       </div>
 
@@ -1003,9 +1140,10 @@ function OverviewContent({
   const hasIndustryFilter = !!companyType && industryMatchCountries.size > 0;
 
   // When filter is ON: only show countries with matching-industry suppliers
-  const filteredCountryKeys = hasIndustryFilter && !showAllIndustries
-    ? Object.keys(countryGroups).filter((c) => industryMatchCountries.has(c))
-    : Object.keys(countryGroups);
+  const filteredCountryKeys =
+    hasIndustryFilter && !showAllIndustries
+      ? Object.keys(countryGroups).filter((c) => industryMatchCountries.has(c))
+      : Object.keys(countryGroups);
 
   // Sort: industry+preferred first, then preferred-only, then industry-only, then alpha
   const countries = filteredCountryKeys.sort((a, b) => {
@@ -1020,11 +1158,12 @@ function OverviewContent({
   });
 
   // When filter ON, only count matching-industry suppliers for stats
-  const displayedSuppliers = hasIndustryFilter && !showAllIndustries
-    ? overview.suppliers.filter(
-        (s) => s.industry?.toLowerCase() === companyType.toLowerCase(),
-      )
-    : overview.suppliers;
+  const displayedSuppliers =
+    hasIndustryFilter && !showAllIndustries
+      ? overview.suppliers.filter(
+          (s) => s.industry?.toLowerCase() === companyType.toLowerCase(),
+        )
+      : overview.suppliers;
 
   const avgReliability =
     displayedSuppliers.reduce((s, x) => s + x.reliability_score, 0) /
@@ -1054,13 +1193,17 @@ function OverviewContent({
                 : "bg-emerald-600/20 border-emerald-500/50 text-emerald-400 hover:bg-emerald-600/30"
             }`}
           >
-            <span className={`w-2 h-2 rounded-full ${ showAllIndustries ? "bg-zinc-600" : "bg-emerald-500" }`} />
+            <span
+              className={`w-2 h-2 rounded-full ${showAllIndustries ? "bg-zinc-600" : "bg-emerald-500"}`}
+            />
             {showAllIndustries
               ? `Showing all industries`
               : `Filtered: ${companyType} suppliers only`}
           </button>
           {showAllIndustries && (
-            <span className="text-xs text-zinc-600">{overview.suppliers.length} total suppliers across all industries</span>
+            <span className="text-xs text-zinc-600">
+              {overview.suppliers.length} total suppliers across all industries
+            </span>
           )}
         </div>
       )}
@@ -1090,9 +1233,12 @@ function OverviewContent({
       {countries.map((country) => {
         // When filter ON, only show matching-industry suppliers within each country
         const rawSups = countryGroups[country];
-        const sups = hasIndustryFilter && !showAllIndustries
-          ? rawSups.filter((s) => s.industry?.toLowerCase() === companyType.toLowerCase())
-          : rawSups;
+        const sups =
+          hasIndustryFilter && !showAllIndustries
+            ? rawSups.filter(
+                (s) => s.industry?.toLowerCase() === companyType.toLowerCase(),
+              )
+            : rawSups;
         if (sups.length === 0) return null;
         const first = sups[0];
         const cf = first.country_factors;
@@ -1101,15 +1247,18 @@ function OverviewContent({
             key={country}
             className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden"
           >
-            <div className={`flex flex-wrap items-center gap-3 px-6 py-4 border-b border-zinc-800 ${
-              industryMatchCountries.has(country) && preferred.includes(country)
-                ? "bg-violet-950/40 border-l-2 border-l-violet-500"
-                : industryMatchCountries.has(country)
-                  ? "bg-emerald-950/30 border-l-2 border-l-emerald-600"
-                  : preferred.includes(country)
-                    ? "bg-indigo-950/40 border-l-2 border-l-indigo-500"
-                    : "bg-zinc-800/40"
-            }`}>
+            <div
+              className={`flex flex-wrap items-center gap-3 px-6 py-4 border-b border-zinc-800 ${
+                industryMatchCountries.has(country) &&
+                preferred.includes(country)
+                  ? "bg-violet-950/40 border-l-2 border-l-violet-500"
+                  : industryMatchCountries.has(country)
+                    ? "bg-emerald-950/30 border-l-2 border-l-emerald-600"
+                    : preferred.includes(country)
+                      ? "bg-indigo-950/40 border-l-2 border-l-indigo-500"
+                      : "bg-zinc-800/40"
+              }`}
+            >
               <h2 className="text-base font-semibold text-white">{country}</h2>
               {preferred.includes(country) && (
                 <span className="text-[11px] px-2 py-0.5 rounded border font-medium bg-indigo-500/20 border-indigo-500/40 text-indigo-300">
@@ -1416,7 +1565,10 @@ function CompareContent({
 }) {
   const [selected, setSelected] = useState<string[]>([]);
 
-  const countryGroups = overview.grouped_by_country as Record<string, SupplierCard[]>;
+  const countryGroups = overview.grouped_by_country as Record<
+    string,
+    SupplierCard[]
+  >;
   const preferred = profile?.preferred_countries ?? [];
   const companyType = profile?.company_type ?? "";
 
@@ -1428,7 +1580,11 @@ function CompareContent({
 
   function toggleCountry(c: string) {
     setSelected((prev) =>
-      prev.includes(c) ? prev.filter((x) => x !== c) : prev.length >= 4 ? prev : [...prev, c],
+      prev.includes(c)
+        ? prev.filter((x) => x !== c)
+        : prev.length >= 4
+          ? prev
+          : [...prev, c],
     );
   }
 
@@ -1456,23 +1612,35 @@ function CompareContent({
       ? sups.reduce((s, x) => s + x.delay_pct, 0) / sups.length
       : 0;
     const industryCount = companyType
-      ? sups.filter((s) => s.industry?.toLowerCase() === companyType.toLowerCase()).length
+      ? sups.filter(
+          (s) => s.industry?.toLowerCase() === companyType.toLowerCase(),
+        ).length
       : 0;
-    return { country, sups, cf, riskScore, riskHeadline, avgReliability, avgDelay, industryCount };
+    return {
+      country,
+      sups,
+      cf,
+      riskScore,
+      riskHeadline,
+      avgReliability,
+      avgDelay,
+      industryCount,
+    };
   }
 
   const cols = selected.map(getData);
 
-  function best<T extends number | null>(
-    vals: T[],
-    prefer: "min" | "max",
-  ): T {
+  function best<T extends number | null>(vals: T[], prefer: "min" | "max"): T {
     const nums = vals.filter((v) => v != null) as number[];
     if (!nums.length) return null as T;
     return (prefer === "min" ? Math.min(...nums) : Math.max(...nums)) as T;
   }
 
-  function cellCls(val: number | null, bestVal: number | null, prefer: "min" | "max") {
+  function cellCls(
+    val: number | null,
+    bestVal: number | null,
+    prefer: "min" | "max",
+  ) {
     if (val == null || bestVal == null) return "text-zinc-400";
     const isBest = prefer === "min" ? val === bestVal : val === bestVal;
     return isBest ? "text-emerald-400 font-bold" : "text-zinc-200";
@@ -1481,9 +1649,12 @@ function CompareContent({
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-zinc-100">Compare Countries</h1>
+        <h1 className="text-xl font-semibold text-zinc-100">
+          Compare Countries
+        </h1>
         <p className="text-zinc-500 text-sm mt-0.5">
-          Select up to 4 countries to compare logistics, risk, and supplier quality side-by-side.
+          Select up to 4 countries to compare logistics, risk, and supplier
+          quality side-by-side.
         </p>
       </div>
 
@@ -1508,7 +1679,8 @@ function CompareContent({
             const isPref = preferred.includes(c);
             const hasIndustry = companyType
               ? (countryGroups[c] ?? []).some(
-                  (s) => s.industry?.toLowerCase() === companyType.toLowerCase(),
+                  (s) =>
+                    s.industry?.toLowerCase() === companyType.toLowerCase(),
                 )
               : false;
             const disabled = !isSelected && selected.length >= 4;
@@ -1530,16 +1702,30 @@ function CompareContent({
                 }`}
               >
                 {c}
-                {isPref && <span className="ml-1 text-indigo-500 opacity-70">★</span>}
-                {hasIndustry && <span className="ml-1 text-emerald-500 opacity-70">✓</span>}
+                {isPref && (
+                  <span className="ml-1 text-indigo-500 opacity-70">★</span>
+                )}
+                {hasIndustry && (
+                  <span className="ml-1 text-emerald-500 opacity-70">✓</span>
+                )}
               </button>
             );
           })}
         </div>
         {(preferred.length > 0 || companyType) && (
           <p className="text-[11px] text-zinc-600 mt-3">
-            {preferred.length > 0 && <><span className="text-indigo-500">★</span> preferred source&nbsp;&nbsp;</>}
-            {companyType && <><span className="text-emerald-500">✓</span> has {companyType} suppliers</>}
+            {preferred.length > 0 && (
+              <>
+                <span className="text-indigo-500">★</span> preferred
+                source&nbsp;&nbsp;
+              </>
+            )}
+            {companyType && (
+              <>
+                <span className="text-emerald-500">✓</span> has {companyType}{" "}
+                suppliers
+              </>
+            )}
           </p>
         )}
       </div>
@@ -1552,24 +1738,38 @@ function CompareContent({
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
               d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
             />
           </svg>
-          <p className="text-sm text-zinc-500">Select at least 2 countries above to compare</p>
+          <p className="text-sm text-zinc-500">
+            Select at least 2 countries above to compare
+          </p>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[560px] text-sm">
             <thead>
               <tr className="border-b border-zinc-800">
-                <th className="text-left text-xs text-zinc-600 font-medium pb-4 pr-6 w-44">Metric</th>
+                <th className="text-left text-xs text-zinc-600 font-medium pb-4 pr-6 w-44">
+                  Metric
+                </th>
                 {cols.map((d) => (
-                  <th key={d.country} className="pb-4 px-4 text-center min-w-[140px]">
-                    <p className="text-base font-bold text-white">{d.country}</p>
+                  <th
+                    key={d.country}
+                    className="pb-4 px-4 text-center min-w-[140px]"
+                  >
+                    <p className="text-base font-bold text-white">
+                      {d.country}
+                    </p>
                     <div className="flex flex-wrap justify-center gap-1 mt-1">
                       {preferred.includes(d.country) && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/20 border border-indigo-500/30 text-indigo-300">★ Preferred</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/20 border border-indigo-500/30 text-indigo-300">
+                          ★ Preferred
+                        </span>
                       )}
                       {d.industryCount > 0 && (
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/30 text-emerald-300">
@@ -1584,20 +1784,28 @@ function CompareContent({
             <tbody>
               {/* Suppliers */}
               <tr className="border-b border-zinc-800/50">
-                <td className="py-3 pr-6 text-xs text-zinc-500">Total Suppliers</td>
+                <td className="py-3 pr-6 text-xs text-zinc-500">
+                  Total Suppliers
+                </td>
                 {cols.map((d) => (
                   <td key={d.country} className="py-3 px-4 text-center">
-                    <span className="font-bold text-white">{d.sups.length}</span>
+                    <span className="font-bold text-white">
+                      {d.sups.length}
+                    </span>
                   </td>
                 ))}
               </tr>
               {/* Industry match */}
               {companyType && (
                 <tr className="border-b border-zinc-800/50">
-                  <td className="py-3 pr-6 text-xs text-zinc-500">{companyType} Suppliers</td>
+                  <td className="py-3 pr-6 text-xs text-zinc-500">
+                    {companyType} Suppliers
+                  </td>
                   {cols.map((d) => (
                     <td key={d.country} className="py-3 px-4 text-center">
-                      <span className={`font-bold ${d.industryCount > 0 ? "text-emerald-400" : "text-zinc-700"}`}>
+                      <span
+                        className={`font-bold ${d.industryCount > 0 ? "text-emerald-400" : "text-zinc-700"}`}
+                      >
                         {d.industryCount}
                       </span>
                     </td>
@@ -1606,39 +1814,70 @@ function CompareContent({
               )}
               {/* Avg Reliability */}
               <tr className="border-b border-zinc-800/50">
-                <td className="py-3 pr-6 text-xs text-zinc-500">Avg Reliability</td>
+                <td className="py-3 pr-6 text-xs text-zinc-500">
+                  Avg Reliability
+                </td>
                 {(() => {
-                  const b = best(cols.map((d) => d.avgReliability), "max");
+                  const b = best(
+                    cols.map((d) => d.avgReliability),
+                    "max",
+                  );
                   return cols.map((d) => (
                     <td key={d.country} className="py-3 px-4 text-center">
-                      <span className={cellCls(d.avgReliability, b, "max")}>{d.avgReliability.toFixed(0)}%</span>
+                      <span className={cellCls(d.avgReliability, b, "max")}>
+                        {d.avgReliability.toFixed(0)}%
+                      </span>
                     </td>
                   ));
                 })()}
               </tr>
               {/* Avg Delay */}
               <tr className="border-b border-zinc-800/50">
-                <td className="py-3 pr-6 text-xs text-zinc-500">Avg Delay Rate</td>
+                <td className="py-3 pr-6 text-xs text-zinc-500">
+                  Avg Delay Rate
+                </td>
                 {(() => {
-                  const b = best(cols.map((d) => d.avgDelay), "min");
+                  const b = best(
+                    cols.map((d) => d.avgDelay),
+                    "min",
+                  );
                   return cols.map((d) => (
                     <td key={d.country} className="py-3 px-4 text-center">
-                      <span className={cellCls(d.avgDelay, b, "min")}>{d.avgDelay.toFixed(1)}%</span>
+                      <span className={cellCls(d.avgDelay, b, "min")}>
+                        {d.avgDelay.toFixed(1)}%
+                      </span>
                     </td>
                   ));
                 })()}
               </tr>
               {/* Geopolitical Risk */}
               <tr className="border-b border-zinc-800/50">
-                <td className="py-3 pr-6 text-xs text-zinc-500">Geopolitical Risk</td>
+                <td className="py-3 pr-6 text-xs text-zinc-500">
+                  Geopolitical Risk
+                </td>
                 {(() => {
-                  const b = best(cols.map((d) => d.riskScore), "min");
+                  const b = best(
+                    cols.map((d) => d.riskScore),
+                    "min",
+                  );
                   return cols.map((d) => {
                     const rs = d.riskScore;
-                    const rsCls = rs == null ? "text-zinc-600" : rs === b ? "text-emerald-400 font-bold" : rs >= 7 ? "text-red-400" : rs >= 4 ? "text-amber-400" : "text-emerald-400";
+                    const rsCls =
+                      rs == null
+                        ? "text-zinc-600"
+                        : rs === b
+                          ? "text-emerald-400 font-bold"
+                          : rs >= 7
+                            ? "text-red-400"
+                            : rs >= 4
+                              ? "text-amber-400"
+                              : "text-emerald-400";
                     return (
                       <td key={d.country} className="py-3 px-4 text-center">
-                        <span className={rsCls}>{rs?.toFixed(1) ?? "—"}<span className="text-zinc-600 text-xs">/10</span></span>
+                        <span className={rsCls}>
+                          {rs?.toFixed(1) ?? "—"}
+                          <span className="text-zinc-600 text-xs">/10</span>
+                        </span>
                       </td>
                     );
                   });
@@ -1646,14 +1885,21 @@ function CompareContent({
               </tr>
               {/* Shipping Cost */}
               <tr className="border-b border-zinc-800/50">
-                <td className="py-3 pr-6 text-xs text-zinc-500">Shipping Cost/kg</td>
+                <td className="py-3 pr-6 text-xs text-zinc-500">
+                  Shipping Cost/kg
+                </td>
                 {(() => {
-                  const b = best(cols.map((d) => d.cf?.shipping_cost_usd_per_kg ?? null), "min");
+                  const b = best(
+                    cols.map((d) => d.cf?.shipping_cost_usd_per_kg ?? null),
+                    "min",
+                  );
                   return cols.map((d) => {
                     const v = d.cf?.shipping_cost_usd_per_kg ?? null;
                     return (
                       <td key={d.country} className="py-3 px-4 text-center">
-                        <span className={cellCls(v, b, "min")}>{v != null ? `$${v}` : "—"}</span>
+                        <span className={cellCls(v, b, "min")}>
+                          {v != null ? `$${v}` : "—"}
+                        </span>
                       </td>
                     );
                   });
@@ -1661,14 +1907,21 @@ function CompareContent({
               </tr>
               {/* Shipping Days */}
               <tr className="border-b border-zinc-800/50">
-                <td className="py-3 pr-6 text-xs text-zinc-500">Avg Shipping Days</td>
+                <td className="py-3 pr-6 text-xs text-zinc-500">
+                  Avg Shipping Days
+                </td>
                 {(() => {
-                  const b = best(cols.map((d) => d.cf?.avg_shipping_days ?? null), "min");
+                  const b = best(
+                    cols.map((d) => d.cf?.avg_shipping_days ?? null),
+                    "min",
+                  );
                   return cols.map((d) => {
                     const v = d.cf?.avg_shipping_days ?? null;
                     return (
                       <td key={d.country} className="py-3 px-4 text-center">
-                        <span className={cellCls(v, b, "min")}>{v != null ? `${v}d` : "—"}</span>
+                        <span className={cellCls(v, b, "min")}>
+                          {v != null ? `${v}d` : "—"}
+                        </span>
                       </td>
                     );
                   });
@@ -1676,14 +1929,21 @@ function CompareContent({
               </tr>
               {/* Customs Clearance */}
               <tr className="border-b border-zinc-800/50">
-                <td className="py-3 pr-6 text-xs text-zinc-500">Customs Clearance</td>
+                <td className="py-3 pr-6 text-xs text-zinc-500">
+                  Customs Clearance
+                </td>
                 {(() => {
-                  const b = best(cols.map((d) => d.cf?.customs_clearance_days ?? null), "min");
+                  const b = best(
+                    cols.map((d) => d.cf?.customs_clearance_days ?? null),
+                    "min",
+                  );
                   return cols.map((d) => {
                     const v = d.cf?.customs_clearance_days ?? null;
                     return (
                       <td key={d.country} className="py-3 px-4 text-center">
-                        <span className={cellCls(v, b, "min")}>{v != null ? `${v}d` : "—"}</span>
+                        <span className={cellCls(v, b, "min")}>
+                          {v != null ? `${v}d` : "—"}
+                        </span>
                       </td>
                     );
                   });
@@ -1691,14 +1951,21 @@ function CompareContent({
               </tr>
               {/* Political Stability */}
               <tr className="border-b border-zinc-800/50">
-                <td className="py-3 pr-6 text-xs text-zinc-500">Political Stability</td>
+                <td className="py-3 pr-6 text-xs text-zinc-500">
+                  Political Stability
+                </td>
                 {(() => {
-                  const b = best(cols.map((d) => d.cf?.political_stability ?? null), "max");
+                  const b = best(
+                    cols.map((d) => d.cf?.political_stability ?? null),
+                    "max",
+                  );
                   return cols.map((d) => {
                     const v = d.cf?.political_stability ?? null;
                     return (
                       <td key={d.country} className="py-3 px-4 text-center">
-                        <span className={cellCls(v, b, "max")}>{v != null ? `${v}/10` : "—"}</span>
+                        <span className={cellCls(v, b, "max")}>
+                          {v != null ? `${v}/10` : "—"}
+                        </span>
                       </td>
                     );
                   });
@@ -1706,25 +1973,36 @@ function CompareContent({
               </tr>
               {/* FTA */}
               <tr className="border-b border-zinc-800/50">
-                <td className="py-3 pr-6 text-xs text-zinc-500">FTA Available</td>
+                <td className="py-3 pr-6 text-xs text-zinc-500">
+                  FTA Available
+                </td>
                 {cols.map((d) => (
                   <td key={d.country} className="py-3 px-4 text-center">
-                    {d.cf?.has_fta
-                      ? <span className="text-emerald-400 font-bold">Yes</span>
-                      : <span className="text-zinc-600">No</span>}
+                    {d.cf?.has_fta ? (
+                      <span className="text-emerald-400 font-bold">Yes</span>
+                    ) : (
+                      <span className="text-zinc-600">No</span>
+                    )}
                   </td>
                 ))}
               </tr>
               {/* Corporate Tax */}
               <tr className="border-b border-zinc-800/50">
-                <td className="py-3 pr-6 text-xs text-zinc-500">Corporate Tax</td>
+                <td className="py-3 pr-6 text-xs text-zinc-500">
+                  Corporate Tax
+                </td>
                 {(() => {
-                  const b = best(cols.map((d) => d.cf?.corporate_tax_pct ?? null), "min");
+                  const b = best(
+                    cols.map((d) => d.cf?.corporate_tax_pct ?? null),
+                    "min",
+                  );
                   return cols.map((d) => {
                     const v = d.cf?.corporate_tax_pct ?? null;
                     return (
                       <td key={d.country} className="py-3 px-4 text-center">
-                        <span className={cellCls(v, b, "min")}>{v != null ? `${v}%` : "—"}</span>
+                        <span className={cellCls(v, b, "min")}>
+                          {v != null ? `${v}%` : "—"}
+                        </span>
                       </td>
                     );
                   });
@@ -1735,7 +2013,9 @@ function CompareContent({
                 <td className="py-3 pr-6 text-xs text-zinc-500">Economy</td>
                 {cols.map((d) => (
                   <td key={d.country} className="py-3 px-4 text-center">
-                    <span className="text-xs text-zinc-400">{d.cf?.economy_label ?? "—"}</span>
+                    <span className="text-xs text-zinc-400">
+                      {d.cf?.economy_label ?? "—"}
+                    </span>
                   </td>
                 ))}
               </tr>
@@ -1744,18 +2024,39 @@ function CompareContent({
 
           {/* Risk headlines */}
           {cols.some((d) => d.riskHeadline) && (
-            <div className={["mt-6 grid gap-3", ["grid-cols-1","grid-cols-2","grid-cols-3","grid-cols-4"][cols.length - 1]].join(" ")}>
+            <div
+              className={[
+                "mt-6 grid gap-3",
+                ["grid-cols-1", "grid-cols-2", "grid-cols-3", "grid-cols-4"][
+                  cols.length - 1
+                ],
+              ].join(" ")}
+            >
               {cols.map((d) => (
-                <div key={d.country} className="p-3 bg-zinc-900 border border-zinc-800 rounded-lg">
-                  <p className="text-[11px] text-zinc-500 mb-1.5 font-medium">{d.country} — Latest signal</p>
-                  <p className="text-xs text-zinc-300 leading-relaxed">{d.riskHeadline ?? "No signal data"}</p>
+                <div
+                  key={d.country}
+                  className="p-3 bg-zinc-900 border border-zinc-800 rounded-lg"
+                >
+                  <p className="text-[11px] text-zinc-500 mb-1.5 font-medium">
+                    {d.country} — Latest signal
+                  </p>
+                  <p className="text-xs text-zinc-300 leading-relaxed">
+                    {d.riskHeadline ?? "No signal data"}
+                  </p>
                 </div>
               ))}
             </div>
           )}
 
           {/* Supplier lists per country */}
-          <div className={["mt-6 grid gap-4", ["grid-cols-1","grid-cols-2","grid-cols-3","grid-cols-4"][cols.length - 1]].join(" ")}>
+          <div
+            className={[
+              "mt-6 grid gap-4",
+              ["grid-cols-1", "grid-cols-2", "grid-cols-3", "grid-cols-4"][
+                cols.length - 1
+              ],
+            ].join(" ")}
+          >
             {cols.map((d) => (
               <div key={d.country}>
                 <p className="text-[11px] text-zinc-500 font-semibold mb-2 uppercase tracking-wide">
@@ -1763,7 +2064,9 @@ function CompareContent({
                 </p>
                 <div className="space-y-1.5">
                   {d.sups.slice(0, 6).map((s) => {
-                    const isMatch = companyType && s.industry?.toLowerCase() === companyType.toLowerCase();
+                    const isMatch =
+                      companyType &&
+                      s.industry?.toLowerCase() === companyType.toLowerCase();
                     return (
                       <div
                         key={s.supplier_id}
@@ -1773,13 +2076,20 @@ function CompareContent({
                             : "border-zinc-800 bg-zinc-900/40 text-zinc-400"
                         }`}
                       >
-                        <p className="font-medium truncate">{s.supplier_name}</p>
-                        <p className="text-zinc-600 mt-0.5">{s.reliability_score.toFixed(0)}% reliable · {s.avg_delivery_days}d</p>
+                        <p className="font-medium truncate">
+                          {s.supplier_name}
+                        </p>
+                        <p className="text-zinc-600 mt-0.5">
+                          {s.reliability_score.toFixed(0)}% reliable ·{" "}
+                          {s.avg_delivery_days}d
+                        </p>
                       </div>
                     );
                   })}
                   {d.sups.length > 6 && (
-                    <p className="text-[11px] text-zinc-600 pl-1">+{d.sups.length - 6} more</p>
+                    <p className="text-[11px] text-zinc-600 pl-1">
+                      +{d.sups.length - 6} more
+                    </p>
                   )}
                 </div>
               </div>

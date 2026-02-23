@@ -16,6 +16,7 @@ class SupplierSchema(BaseModel):
     supplier_name: str
     country: str
     industry: Optional[str] = None
+    supply_tier: Optional[str] = None  # "Raw Materials" | "Components" | "Manufacturing"
     reliability_score: float
     average_delivery_time: int
     cost_competitiveness: str
@@ -219,6 +220,7 @@ class SupplierCard(BaseModel):
     country: str
     continent: str
     industry: Optional[str] = None
+    supply_tier: Optional[str] = None  # "Raw Materials" | "Components" | "Manufacturing"
     reliability_score: float
     avg_delivery_days: int
     cost_competitiveness: str

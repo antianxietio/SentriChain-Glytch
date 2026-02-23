@@ -43,6 +43,7 @@ class Supplier(Base):
     supplier_name = Column(String, nullable=False)
     country = Column(String, nullable=False)
     industry = Column(String, nullable=True, default="Electronics")  # company type served
+    supply_tier = Column(String, nullable=True, default="Components")  # Raw Materials | Components | Manufacturing
     reliability_score = Column(Float, nullable=False)  # 0-100
     average_delivery_time = Column(Integer, nullable=False)  # days
     cost_competitiveness = Column(String, nullable=False)  # low, medium, high
