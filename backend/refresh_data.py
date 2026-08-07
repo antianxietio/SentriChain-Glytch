@@ -1,15 +1,3 @@
-"""
-Real data refresh — pulls live World Bank APIs and builds realistic procurement data.
-
-Sources (all free, no API key required):
-  - World Bank WGI  : Political Stability (PV.EST) — https://data.worldbank.org
-  - World Bank LPI  : Logistics Performance Index  — https://data.worldbank.org
-  - World Bank GDP  : GDP per capita growth        — https://data.worldbank.org
-  - GDELT v2        : Geopolitical headlines       — https://api.gdeltproject.org
-
-Run:  python refresh_data.py
-"""
-
 import json
 import random
 import sys
